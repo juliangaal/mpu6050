@@ -10,7 +10,7 @@ cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
 - [x] init with default settings
 - [ ] init with custom settings
 - [x] device verification
-- [x] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
+- [ ] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
 - [ ] read gyro data
 - [ ] read acc data
 - [ ] read temp data
