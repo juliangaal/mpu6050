@@ -1,0 +1,10 @@
+[package]
+name = "example"
+version = "0.1.0"
+authors = ["Julian Gaal <juliangaal@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+mpu6050 = "0.1.0"
+i2cdev = "0.4.1"
+linux-embedded-hal = "0.2.2"

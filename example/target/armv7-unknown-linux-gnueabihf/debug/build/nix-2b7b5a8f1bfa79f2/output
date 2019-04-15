@@ -1,0 +1,1 @@
+cargo:rustc-cfg=raw_pointer_derive_allowed

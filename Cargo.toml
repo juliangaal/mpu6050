@@ -11,7 +11,5 @@ keywords = ["mpu6050", "imu", "embedded"]
 license = "MIT"
 
 [dependencies]
-i2cdev = "0.4.1"
 embedded-hal = "0.2.2"
-linux-embedded-hal = "0.2.2"
 libm = "0.1.2"
