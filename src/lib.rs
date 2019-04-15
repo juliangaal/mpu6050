@@ -1,15 +1,17 @@
 #![no_std]
 
-pub mod constants;
-
 ///! Mpu6050 sensor driver.
 ///! Datasheet: 
+
+pub mod constants;
+
+use crate::constants::*;
+use libm as m;
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Read, Write, WriteRead},
 };
 
-use crate::constants::*;
 
 #[derive(Default)]
 struct Bias {
@@ -85,7 +87,7 @@ where
         }
     }
 
-    pub fn soft_calibrate(&mut self, steps: u8) -> Result<(), Error<E>> {
+    pub fn soft_calib(&mut self, steps: u8) -> Result<(), Error<E>> {
         let mut bias = Bias::default();
 
         for _ in 0..steps+1 {
@@ -118,10 +120,12 @@ where
         Ok(())
     }
 
-    /// Implements complementary filter for roll/pitch
     /// NOTE: yaw will always point up, sensor has no magnetometer to allow fusion
-    pub fn rpy(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        Ok((0.0, 0.0, 0.0))
+    pub fn get_acc_angles(&mut self) -> Result<(f32, f32), Error<E>> {
+        let (ax, ay, az) = self.get_acc()?;
+        let roll: f32 = m::atan2f(ay, m::sqrtf(m::powf(ax, 2.) + m::powf(az, 2.)));
+        let pitch: f32 = m::atan2f(-ax, m::sqrtf(m::powf(ay, 2.) + m::powf(az, 2.)));
+        Ok((roll, pitch))
     }
 
     // TODO work on removing unnecessary type conversion

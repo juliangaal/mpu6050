@@ -10,10 +10,10 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
-    mpu.soft_calibrate(200)?;
+    //mpu.soft_calibrate(200)?;
 
     loop {
-        match mpu.get_gyro() {
+        match mpu.get_acc_angles() {
             Ok(r) => {
                 println!("{:?}", r);
             },
