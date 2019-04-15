@@ -67,3 +67,7 @@ class IMU:
             return -((65535 - val) + 1)
         else:
             return val
+
+imu = IMU()
+while True:
+    print(imu.get_acc_angles())
