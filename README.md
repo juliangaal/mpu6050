@@ -1,16 +1,61 @@
-# mpu6050
+# MPU 6050 Rust Driver
 
-Platform agnostic driver for MPU6050 sensor.
+Platform agnostic driver for MPU 6050 sensor using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
 
-### Basic usage - `linux_embedded_hal` example
+### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
+```rust
+use mpu6050::*;
+use linux_embedded_hal::{I2cdev, Delay};
+use i2cdev::linux::LinuxI2CError;
+
+fn main() -> Result<(), Error<LinuxI2CError>> {
+    let i2c = I2cdev::new("/dev/i2c-1")
+        .map_err(Error::I2c)?;
+
+    let delay = Delay;
+
+    let mut mpu = Mpu6050::new(i2c, delay);
+    mpu.init()?;
+
+    loop {
+        // get roll and pitch estimate
+        match mpu.get_acc_angles() {
+            Ok(r) => {
+                println!("r/p: {:?}", r);
+            },
+            Err(_) => {} ,
+        }
+
+        // get temp
+        match mpu.get_temp() {
+            Ok(r) => {
+                println!("temp: {}c", r);
+            },
+            Err(_) => {} ,
+        }
+
+        // get gyro data, scaled with sensitivity 
+        match mpu.get_gyro() {
+            Ok(r) => {
+                println!("gyro: {:?}", r);
+            },
+            Err(_) => {} ,
+        }
+        
+        // get accelerometer data, scaled with sensitivity
+        match mpu.get_acc() {
+            Ok(r) => {
+                println!("acc: {:?}", r);
+            },
+            Err(_) => {} ,
+        }
+    }
+}
 ```
-
-```
-
-Requirements: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
-cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
-
-
+#### Compile linux example
+* full file [here](https://github.com/juliangaal/mpu6050/blob/master/src/bin/linux.rs)
+* Requirements f: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
+* cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
 
 ## TODO
 - [x] init with default settings
