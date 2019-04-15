@@ -1,4 +1,7 @@
 /target
+example/target
+example/**/*.rs.bk
+example/Cargo.lock
 **/*.rs.bk
 Cargo.lock
 .DS_Store
