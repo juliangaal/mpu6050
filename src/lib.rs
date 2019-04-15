@@ -16,11 +16,17 @@ use embedded_hal::{
 /// Used for bias calculation of chip in mpu::soft_calib
 #[derive(Default)]
 struct Bias {
+    /// accelerometer x axis bias
     ax: f32,
+    /// accelerometer y axis bias
     ay: f32,
+    /// accelerometer z axis bias
     az: f32,
+    /// gyro x axis bias
     gx: f32,
+    /// gyro y axis bias
     gy: f32,
+    /// gyro z axis bias
     gz: f32,
 }
 
