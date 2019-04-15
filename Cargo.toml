@@ -4,6 +4,12 @@ version = "0.1.0"
 authors = ["Julian Gaal <gjulian@uos.de>"]
 edition = "2018"
 
+description = "Platform agnostic driver for MPU6050 6-axis IMU"
+repository = "https://github.com/juliangaal/mpu6050"
+readme = "https://github.com/juliangaal/mpu6050/README.md"
+keywords = ["mpu6050", "imu", "rust embedded"]
+license = "The Unlicense"
+
 [dependencies]
 i2cdev = "0.4.1"
 embedded-hal = "0.2.2"
