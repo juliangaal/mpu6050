@@ -1,10 +1,10 @@
-# MPU 6050 Rust Driver <img align="right" width="250" height="200" src="https://www.invensense.com/wp-content/uploads/2015/01/rp-mpu-6500.png">
+# MPU 6050 Rust Driver <img align="right" width="300" height="250" src="https://www.invensense.com/wp-content/uploads/2015/01/rp-mpu-6500.png">
 
 Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6500/) using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
 
-[Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
+[Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf) | [Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
 
-[Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
+[Docs](https://docs.rs/mpu6050/0.1.0/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
 
 ### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
 ```rust
@@ -13,7 +13,7 @@ use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
 
 fn main() -> Result<(), Error<LinuxI2CError>> {
-    let i2c = I2cdev::new("/dev/i2c-1")
+    let i2c = I2cdev::new("/dev/i2c-1") // or privide your owm on different platforms
         .map_err(Error::I2c)?;
 
     let delay = Delay;
@@ -56,10 +56,25 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
     }
 }
 ```
-#### Compile linux example
-* full file [here](https://github.com/juliangaal/mpu6050/blob/master/src/bin/linux.rs)
-* Requirements: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
-* cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
+#### Compile linux example (Rapsberry Pi 3B)
+files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
+
+Requirements: 
+```bash
+$ apt-get install -qq gcc-armv7-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
+```
+and all dependencies in `example/Cargo.toml`
+
+Rustup:
+```bash
+$ rustup target add armv7-unknown-linux-gnueabihf
+```
+To configure the linker use `example/.cargo/config`
+
+cross-compile with 
+```bash
+$ cargo build --target=armv7-unknown-linux-gnueabihf
+```
 
 ## TODO
 - [x] init with default settings
