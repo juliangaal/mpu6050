@@ -1,6 +1,10 @@
-# MPU 6050 Rust Driver
+# MPU 6050 Rust Driver <img align="right" width="250" height="200" src="https://www.invensense.com/wp-content/uploads/2015/01/rp-mpu-6500.png">
 
-Platform agnostic driver for MPU 6050 sensor using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
+Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6500/) using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
+
+[Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
+
+[Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
 
 ### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
 ```rust
@@ -69,8 +73,7 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 - [x] read temp data
 - [ ] rename constants to better match datasheet
 - [ ] complementary filter for roll, pitch estimate
-- [ ] sample rate devider with register 25? time step?
-- [ ] timer/clock control with PWR_MGMT_2
+- [ ] sample rate devider with register 25? or timer/clock control with PWR_MGMT_2
   - [ ] internal clock, register 108 `POWER_MGMT_2`, [will  cycle between  sleep mode  and  waking  up  to  take a single  sample of data from active sensors at a rate determined by LP_WAKE_CTRL](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) (page 41-43)
-- [ ] plotting [csv data](https://plot.ly/python/plot-data-from-csv/)?
+- [ ] plotting [csv data](https://plot.ly/python/plot-data-from-csv/)for testing?
 
