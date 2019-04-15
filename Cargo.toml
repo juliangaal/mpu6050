@@ -7,7 +7,7 @@ edition = "2018"
 description = "Platform agnostic driver for MPU6050 6-axis IMU"
 repository = "https://github.com/juliangaal/mpu6050"
 readme = "README.md"
-keywords = ["mpu6050", "imu", "rust embedded"]
+keywords = ["mpu6050", "imu", "embedded"]
 license = "The Unlicense"
 
 [dependencies]
