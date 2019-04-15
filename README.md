@@ -54,7 +54,7 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 ```
 #### Compile linux example
 * full file [here](https://github.com/juliangaal/mpu6050/blob/master/src/bin/linux.rs)
-* Requirements f: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
+* Requirements: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
 * cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
 
 ## TODO
