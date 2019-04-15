@@ -1,10 +1,10 @@
 #![no_std]
 
+pub mod constants;
+
 ///! Mpu6050 sensor driver.
 ///! Register sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
 ///! Data sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf 
-
-pub mod constants;
 
 use crate::constants::*;
 use libm::{powf, atan2f, sqrtf};
@@ -45,10 +45,10 @@ impl Bias {
     }
 }
 
-/// Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
+// Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
 struct Sensitivity(f32);
 
-/// Converts accelerometer range to correction/scaling factor, see table p. 29 or register sheet
+// Converts accelerometer range to correction/scaling factor, see table p. 29 or register sheet
 impl From<AccelRange> for Sensitivity {
     fn from(range: AccelRange) -> Sensitivity {
         match range {
@@ -60,7 +60,7 @@ impl From<AccelRange> for Sensitivity {
     }
 }
 
-/// Converts gyro range to correction/scaling factor, see table p. 31 or register sheet
+// Converts gyro range to correction/scaling factor, see table p. 31 or register sheet
 impl From<GyroRange> for Sensitivity {
     fn from(range: GyroRange) -> Sensitivity {
         match range {
@@ -72,7 +72,7 @@ impl From<GyroRange> for Sensitivity {
     }
 }
 
-/// defines accelerometer range/sensivity
+/// Defines accelerometer range/sensivity
 pub enum AccelRange {
     G2,
     G4,
@@ -80,7 +80,7 @@ pub enum AccelRange {
     G16,
 }
 
-/// defines gyro range/sensitivity
+/// Defines gyro range/sensitivity
 pub enum GyroRange {
     DEG250,
     DEG500,
