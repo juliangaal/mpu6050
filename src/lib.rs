@@ -1,5 +1,7 @@
 #![no_std]
 
+pub mod constants;
+
 ///! Mpu6050 sensor driver.
 ///! Datasheet: 
 use embedded_hal::{
@@ -7,49 +9,38 @@ use embedded_hal::{
     blocking::i2c::{Read, Write, WriteRead},
 };
 
-const MPU6050_SLAVE_ADDR: u8 = 0x68;
-const MPU6050_WHOAMI: u8 = 0x75;
+use crate::constants::*;
 
-/// High Bytle Register Gyro x orientation
-const MPU6050_GYRO_REGX_H: u8 = 0x43;
-/// High Bytle Register Gyro y orientation
-const MPU6050_GYRO_REGY_H: u8 = 0x45;
-/// High Bytle Register Gyro z orientation
-const MPU6050_GYRO_REGZ_H: u8 = 0x47;
- 
-/// High Byte Register Calc roll
-const MPU6050_ACC_REGX_H: u8 = 0x3b;
-/// High Byte Register Calc pitch
-const MPU6050_ACC_REGY_H: u8 = 0x3d;
-/// High Byte Register Calc yaw
-const MPU6050_ACC_REGZ_H: u8 = 0x3f;
+#[derive(Default)]
+struct Bias {
+    ax: f32,
+    ay: f32,
+    az: f32,
+    gx: f32,
+    gy: f32,
+    gz: f32,
+}
 
-/// Register to control chip waking from sleep, enabling sensors, default: sleep
-const POWER_MGMT_1: u8 = 0x6b; 
-/// Internal clock
-const POWER_MGMT_2: u8 = 0x6c; 
+impl Bias {
+    fn add(&mut self, acc: (f32, f32, f32), gyro: (f32, f32, f32)) {
+        self.ax += acc.0;
+        self.ay += acc.1;
+        self.az += acc.2;
+        self.gx += gyro.0;
+        self.gy += gyro.1;
+        self.gz += gyro.2;
+    }
 
-/// Gyro Sensitivity
-const FS_SEL: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
-/// Calcelerometer Sensitivity
-const AFS_SEL: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
-
-const PI: f32 = 3.14159;
-
-const GRAVITIY_MS2: f32 = 9.80665;
-
-const ACCEL_RANGE_2G: u8 = 0x00;
-const ACCEL_RANGE_4G: u8 = 0x08;
-const ACCEL_RANGE_8G: u8 = 0x10;
-const ACCEL_RANGE_16G: u8 = 0x18;
-
-const GYRO_RANGE_250DEG: u8 = 0x00;
-const GYRO_RANGE_500DEG: u8 = 0x08;
-const GYRO_RANGE_1000DEG: u8 = 0x10;
-const GYRO_RANGE_2000DEG: u8 = 0x18;
-
-const ACCEL_CONFIG: u8  = 0x1c;
-const GYRO_CONFIG: u8 = 0x1b;
+    fn scale(&mut self, n: u8) {
+        let n = n as f32;
+        self.ax /= n;
+        self.ay /= n;
+        self.az /= n;
+        self.gx /= n;
+        self.gy /= n;
+        self.gz /= n;
+    }
+}
 
 enum AccelRange {
     G2,
@@ -77,7 +68,8 @@ pub enum Error<E> {
 
 pub struct Mpu6050<I, D> {
     i2c: I,
-    delay: D
+    delay: D,
+    bias: Option<Bias>,
 }
 
 impl<I, D, E> Mpu6050<I, D>
@@ -89,10 +81,20 @@ where
         Mpu6050 {
             i2c,
             delay,
+            bias: None,
         }
     }
 
-    pub fn soft_calibration(steps: u8, ) -> Result<(), Error<E>> {
+    pub fn soft_calibrate(&mut self, steps: u8) -> Result<(), Error<E>> {
+        let mut bias = Bias::default();
+
+        for _ in 0..steps+1 {
+            bias.add(self.get_acc()?, self.get_gyro()?);
+        }   
+
+        bias.scale(steps);
+        self.bias = Some(bias);
+
         Ok(())
     }
 
@@ -148,28 +150,34 @@ where
 
     /// Accelerometer readings in m/s^2
     pub fn get_acc(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let mut buf: [u8; 6] = [0; 6];
         let (mut ax, mut ay, mut az) = self.read_rot(MPU6050_ACC_REGX_H, AFS_SEL.0)?;
         
         ax /= AFS_SEL.0;
         ay /= AFS_SEL.0;
         az /= AFS_SEL.0;
 
+        if let Some(ref bias) = self.bias { 
+            ax -= bias.ax;
+            ay -= bias.ay;
+            az -= bias.az;
+        }
+
         Ok((ax, ay, az))
     }
 
     /// Gyro readings in rad/s
     pub fn get_gyro(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let mut buf: [u8; 6] = [0; 6];
         let (mut gx, mut gy, mut gz) = self.read_rot(MPU6050_GYRO_REGX_H, FS_SEL.0)?;
 
-        if gy >= 0x8000 as f32 {
-            panic!("Shit");
-        }
-        
         gx *= PI / (180.0 * FS_SEL.0);
         gy *= PI / (180.0 * FS_SEL.0);
         gz *= PI / (180.0 * FS_SEL.0);
+
+        if let Some(ref bias) = self.bias {
+            gx -= bias.gx;
+            gy -= bias.gy;
+            gz -= bias.gz;
+        }
 
         Ok((gx, gy, gz))
     }
