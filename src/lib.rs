@@ -1,7 +1,8 @@
 #![no_std]
 
 ///! Mpu6050 sensor driver.
-///! Datasheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
+///! Register sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
+///! Data sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf 
 
 pub mod constants;
 
@@ -9,10 +10,10 @@ use crate::constants::*;
 use libm::{powf, atan2f, sqrtf};
 use embedded_hal::{
     blocking::delay::DelayMs,
-    blocking::i2c::{Read, Write, WriteRead},
+    blocking::i2c::{Write, WriteRead},
 };
 
-
+/// Used for bias calculation of chip in mpu::soft_calib
 #[derive(Default)]
 struct Bias {
     ax: f32,
@@ -44,6 +45,34 @@ impl Bias {
     }
 }
 
+/// Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
+struct Sensitivity(f32);
+
+/// Converts accelerometer range to correction/scaling factor, see table p. 29 or register sheet
+impl From<AccelRange> for Sensitivity {
+    fn from(range: AccelRange) -> Sensitivity {
+        match range {
+            AccelRange::G2 => return Sensitivity(AFS_SEL.0),
+            AccelRange::G4 => return Sensitivity(AFS_SEL.1),
+            AccelRange::G8 => return Sensitivity(AFS_SEL.2),
+            AccelRange::G16 => return Sensitivity(AFS_SEL.3),
+        }
+    }
+}
+
+/// Converts gyro range to correction/scaling factor, see table p. 31 or register sheet
+impl From<GyroRange> for Sensitivity {
+    fn from(range: GyroRange) -> Sensitivity {
+        match range {
+            GyroRange::DEG250 => return Sensitivity(FS_SEL.0),
+            GyroRange::DEG500 => return Sensitivity(FS_SEL.1),
+            GyroRange::DEG1000 => return Sensitivity(FS_SEL.2),
+            GyroRange::DEG2000 => return Sensitivity(FS_SEL.3),
+        }
+    }
+}
+
+/// defines accelerometer range/sensivity
 pub enum AccelRange {
     G2,
     G4,
@@ -51,6 +80,7 @@ pub enum AccelRange {
     G16,
 }
 
+/// defines gyro range/sensitivity
 pub enum GyroRange {
     DEG250,
     DEG500,
@@ -68,6 +98,7 @@ pub enum Error<E> {
     InvalidChipId(u8),
 }
 
+/// Handles all operations on/with Mpu6050
 pub struct Mpu6050<I, D> {
     i2c: I,
     delay: D,
@@ -92,7 +123,19 @@ where
         }
     }
 
-    /// Performs software calibration. Readings must be made with MPU6050 in resting position
+    /// custom sensitivity
+    pub fn new_with_sens(i2c: I, delay: D, arange: AccelRange, grange: GyroRange) -> Self {
+        Mpu6050 {
+            i2c,
+            delay,
+            bias: None,
+            acc_sensitivity: Sensitivity::from(arange).0,
+            gyro_sensitivity: Sensitivity::from(grange).0,
+        }
+    }
+
+    /// Performs software calibration with steps number of readings.
+    /// Readings must be made with MPU6050 in resting position
     pub fn soft_calib(&mut self, steps: u8) -> Result<(), Error<E>> {
         let mut bias = Bias::default();
 
@@ -139,7 +182,7 @@ where
     }
 
     /// Converts 2 bytes number in 2 compliment
-    /// i16?! whats 0x8000?!
+    /// TODO i16?! whats 0x8000?!
     fn read_word_2c(&self, byte: &[u8]) -> i32 {
         let high: i32 = byte[0] as i32;
         let low: i32 = byte[1] as i32;
@@ -153,7 +196,7 @@ where
     }
 
     /// Reads rotation (gyro/acc) from specified register
-    fn read_rot(&mut self, reg: u8, scaling: f32) -> Result<(f32, f32, f32), Error<E>> {
+    fn read_rot(&mut self, reg: u8) -> Result<(f32, f32, f32), Error<E>> {
         let mut buf: [u8; 6] = [0; 6];
         self.read_bytes(reg, &mut buf)?;
 
@@ -166,7 +209,7 @@ where
 
     /// Accelerometer readings in m/s^2
     pub fn get_acc(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let (mut ax, mut ay, mut az) = self.read_rot(ACC_REGX_H, AFS_SEL.0)?;
+        let (mut ax, mut ay, mut az) = self.read_rot(ACC_REGX_H)?;
         
         ax /= self.acc_sensitivity;
         ay /= self.acc_sensitivity;
@@ -183,7 +226,7 @@ where
 
     /// Gyro readings in rad/s
     pub fn get_gyro(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let (mut gx, mut gy, mut gz) = self.read_rot(GYRO_REGX_H, FS_SEL.0)?;
+        let (mut gx, mut gy, mut gz) = self.read_rot(GYRO_REGX_H)?;
 
         gx *= PI / (180.0 * self.gyro_sensitivity);
         gy *= PI / (180.0 * self.gyro_sensitivity);
