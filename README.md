@@ -2,9 +2,15 @@
 
 Platform agnostic driver for MPU6050 sensor.
 
-### Linux example
+### Basic usage - `linux_embedded_hal` example
+```
+
+```
+
 Requirements: `apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross`
 cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
+
+
 
 ## TODO
 - [x] init with default settings
@@ -15,11 +21,11 @@ cross-compile with `cargo build --bin main --target=arm-unknown-linux-gnueabihf`
 - [x] read acc data
 - [x] software calibration
 - [x] roll, pitch estimation accelerometer only
+- [x] read temp data
+- [ ] rename constants to better match datasheet
 - [ ] complementary filter for roll, pitch estimate
-- [ ] read temp data
+- [ ] sample rate devider with register 25? time step?
 - [ ] timer/clock control with PWR_MGMT_2
   - [ ] internal clock, register 108 `POWER_MGMT_2`, [will  cycle between  sleep mode  and  waking  up  to  take a single  sample of data from active sensors at a rate determined by LP_WAKE_CTRL](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) (page 41-43)
 - [ ] plotting [csv data](https://plot.ly/python/plot-data-from-csv/)?
-- [ ] complementary filter
-- [ ] time step
 

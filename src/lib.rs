@@ -1,12 +1,12 @@
 #![no_std]
 
 ///! Mpu6050 sensor driver.
-///! Datasheet: 
+///! Datasheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
 
 pub mod constants;
 
 use crate::constants::*;
-use libm as m;
+use libm::{powf, atan2f, sqrtf};
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Read, Write, WriteRead},
@@ -44,14 +44,14 @@ impl Bias {
     }
 }
 
-enum AccelRange {
+pub enum AccelRange {
     G2,
     G4,
     G8,
     G16,
 }
 
-enum GyroRange {
+pub enum GyroRange {
     DEG250,
     DEG500,
     DEG1000,
@@ -72,6 +72,8 @@ pub struct Mpu6050<I, D> {
     i2c: I,
     delay: D,
     bias: Option<Bias>,
+    acc_sensitivity: f32,
+    gyro_sensitivity: f32,
 }
 
 impl<I, D, E> Mpu6050<I, D>
@@ -79,14 +81,18 @@ where
     I: Write<Error = E> + WriteRead<Error = E>,
     D: DelayMs<u8>, 
 {
+    /// Side effect free constructor with default sensitivies, no calibration
     pub fn new(i2c: I, delay: D) -> Self {
         Mpu6050 {
             i2c,
             delay,
             bias: None,
+            acc_sensitivity: AFS_SEL.0,
+            gyro_sensitivity: FS_SEL.0, 
         }
     }
 
+    /// Performs software calibration. Readings must be made with MPU6050 in resting position
     pub fn soft_calib(&mut self, steps: u8) -> Result<(), Error<E>> {
         let mut bias = Bias::default();
 
@@ -100,35 +106,40 @@ where
         Ok(())
     }
 
+    /// Wakes MPU6050 with all sensors enabled (default)
     pub fn wake(&mut self) -> Result<(), Error<E>> {
         self.write_u8(POWER_MGMT_1, 0)?;
         self.delay.delay_ms(100u8);
         Ok(())
     }
 
+    /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
     pub fn init(&mut self) -> Result<(), Error<E>> {
         self.wake()?;
         self.verify()?;
         Ok(())
     }
 
+    /// Verifies device to address 0x68 with WHOAMI Register
     pub fn verify(&mut self) -> Result<(), Error<E>> {
-        let address = self.read_u8(MPU6050_WHOAMI)?;
-        if address != MPU6050_SLAVE_ADDR {
+        let address = self.read_u8(WHOAMI)?;
+        if address != SLAVE_ADDR {
             return Err(Error::InvalidChipId(address));
         }
         Ok(())
     }
 
-    /// NOTE: yaw will always point up, sensor has no magnetometer to allow fusion
+    /// Roll and pitch estimation from raw accelerometer readings
+    /// NOTE: no yaw! no magnetometer present on MPU6050
     pub fn get_acc_angles(&mut self) -> Result<(f32, f32), Error<E>> {
         let (ax, ay, az) = self.get_acc()?;
-        let roll: f32 = m::atan2f(ay, m::sqrtf(m::powf(ax, 2.) + m::powf(az, 2.)));
-        let pitch: f32 = m::atan2f(-ax, m::sqrtf(m::powf(ay, 2.) + m::powf(az, 2.)));
+        let roll: f32 = atan2f(ay, sqrtf(powf(ax, 2.) + powf(az, 2.)));
+        let pitch: f32 = atan2f(-ax, sqrtf(powf(ay, 2.) + powf(az, 2.)));
         Ok((roll, pitch))
     }
 
-    // TODO work on removing unnecessary type conversion
+    /// Converts 2 bytes number in 2 compliment
+    /// i16?! whats 0x8000?!
     fn read_word_2c(&self, byte: &[u8]) -> i32 {
         let high: i32 = byte[0] as i32;
         let low: i32 = byte[1] as i32;
@@ -141,9 +152,10 @@ where
         word
     }
 
+    /// Reads rotation (gyro/acc) from specified register
     fn read_rot(&mut self, reg: u8, scaling: f32) -> Result<(f32, f32, f32), Error<E>> {
         let mut buf: [u8; 6] = [0; 6];
-        let bytes = self.read_bytes(reg, &mut buf)?;
+        self.read_bytes(reg, &mut buf)?;
 
         let xr = self.read_word_2c(&buf[0..2]);
         let yr = self.read_word_2c(&buf[2..4]);
@@ -154,11 +166,11 @@ where
 
     /// Accelerometer readings in m/s^2
     pub fn get_acc(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let (mut ax, mut ay, mut az) = self.read_rot(MPU6050_ACC_REGX_H, AFS_SEL.0)?;
+        let (mut ax, mut ay, mut az) = self.read_rot(ACC_REGX_H, AFS_SEL.0)?;
         
-        ax /= AFS_SEL.0;
-        ay /= AFS_SEL.0;
-        az /= AFS_SEL.0;
+        ax /= self.acc_sensitivity;
+        ay /= self.acc_sensitivity;
+        az /= self.acc_sensitivity;
 
         if let Some(ref bias) = self.bias { 
             ax -= bias.ax;
@@ -171,11 +183,11 @@ where
 
     /// Gyro readings in rad/s
     pub fn get_gyro(&mut self) -> Result<(f32, f32, f32), Error<E>> {
-        let (mut gx, mut gy, mut gz) = self.read_rot(MPU6050_GYRO_REGX_H, FS_SEL.0)?;
+        let (mut gx, mut gy, mut gz) = self.read_rot(GYRO_REGX_H, FS_SEL.0)?;
 
-        gx *= PI / (180.0 * FS_SEL.0);
-        gy *= PI / (180.0 * FS_SEL.0);
-        gz *= PI / (180.0 * FS_SEL.0);
+        gx *= PI / (180.0 * self.gyro_sensitivity);
+        gy *= PI / (180.0 * self.gyro_sensitivity);
+        gz *= PI / (180.0 * self.gyro_sensitivity);
 
         if let Some(ref bias) = self.bias {
             gx -= bias.gx;
@@ -186,22 +198,34 @@ where
         Ok((gx, gy, gz))
     }
 
+    /// Temp in degrees celcius
+    pub fn get_temp(&mut self) -> Result<f32, Error<E>> {
+        let mut buf: [u8; 2] = [0; 2];
+        self.read_bytes(TEMP_OUT_H, &mut buf)?;
+        let raw_temp = self.read_word_2c(&buf[0..2]) as f32;
+
+        Ok((raw_temp / 340.) + 36.53)
+    }
+
+    /// Writes byte to register
     pub fn write_u8(&mut self, reg: u8, byte: u8) -> Result<(), Error<E>> {
-        self.i2c.write(MPU6050_SLAVE_ADDR, &[reg, byte])
+        self.i2c.write(SLAVE_ADDR, &[reg, byte])
             .map_err(Error::I2c)?;
         self.delay.delay_ms(10u8);
         Ok(())
     }
-
+    
+    /// Reads byte from register
     pub fn read_u8(&mut self, reg: u8) -> Result<u8, Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
-        self.i2c.write_read(MPU6050_SLAVE_ADDR, &[reg], &mut byte)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], &mut byte)
             .map_err(Error::I2c)?;
         Ok(byte[0])
     }
 
+    /// Reads series of bytes into buf from specified reg
     pub fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), Error<E>> {
-        self.i2c.write_read(MPU6050_SLAVE_ADDR, &[reg], buf)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], buf)
             .map_err(Error::I2c)?;
         Ok(())
     }

@@ -1,19 +1,22 @@
-pub const MPU6050_SLAVE_ADDR: u8 = 0x68;
-pub const MPU6050_WHOAMI: u8 = 0x75;
+pub const SLAVE_ADDR: u8 = 0x68;
+pub const WHOAMI: u8 = 0x75;
 
 /// High Bytle Register Gyro x orientation
-pub const MPU6050_GYRO_REGX_H: u8 = 0x43;
+pub const GYRO_REGX_H: u8 = 0x43;
 /// High Bytle Register Gyro y orientation
-pub const MPU6050_GYRO_REGY_H: u8 = 0x45;
+pub const GYRO_REGY_H: u8 = 0x45;
 /// High Bytle Register Gyro z orientation
-pub const MPU6050_GYRO_REGZ_H: u8 = 0x47;
+pub const GYRO_REGZ_H: u8 = 0x47;
  
 /// High Byte Register Calc roll
-pub const MPU6050_ACC_REGX_H: u8 = 0x3b;
+pub const ACC_REGX_H: u8 = 0x3b;
 /// High Byte Register Calc pitch
-pub const MPU6050_ACC_REGY_H: u8 = 0x3d;
+pub const ACC_REGY_H: u8 = 0x3d;
 /// High Byte Register Calc yaw
-pub const MPU6050_ACC_REGZ_H: u8 = 0x3f;
+pub const ACC_REGZ_H: u8 = 0x3f;
+
+/// High Byte Register Temperature
+pub const TEMP_OUT_H: u8 = 0x41;
 
 /// Register to control chip waking from sleep, enabling sensors, default: sleep
 pub const POWER_MGMT_1: u8 = 0x6b; 
