@@ -10,5 +10,12 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
-    Ok(())
+    loop {
+        match mpu.get_gyro() {
+            Ok(r) => {
+                println!("{:?}", r);
+            },
+            Err(_) => {} ,
+        }
+    }
 }
