@@ -6,6 +6,8 @@ Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/pr
 
 [Docs](https://docs.rs/mpu6050/0.1.1/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
 
+Visualization options for testing and development in [viz branch](https://github.com/juliangaal/mpu6050/tree/viz/viz)
+
 ### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
 ```rust
 use mpu6050::*;
