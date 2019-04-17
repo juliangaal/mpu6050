@@ -1,4 +1,5 @@
-# MPU 6050 Rust Driver <img align="right" width="250" height="190" src="https://www.invensense.com/wp-content/uploads/2015/01/rp-mpu-6500.png">
+# MPU 6050 Rust Driver 
+<img align="right" width="250" height="190" src="https://www.invensense.com/wp-content/uploads/2015/01/rp-mpu-6500.png">
 
 Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6500/) using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
 
@@ -42,7 +43,7 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
     }
 }
 ```
-*Note*: this example uses API of version published on crates.io. If you're using code directly from master, the example may be broken
+*Note*: this example uses API of version published on crates.io, not local master branch.
 
 #### Compile linux example (Raspberry Pi 3B)
 files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
