@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import math
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -14,13 +15,18 @@ class RegrMagic(object):
     """Mock for function Regr_magic()
     """
     def __init__(self):
-        self.x = 0.0
-        self.y = 0.0
+        raw_data = open("sample.txt","r").read()
+        self.angles = raw_data.split('\n')
+        self.num_data = len(self.angles)
+        self.run_index = 0
 
     def __call__(self) -> float:
-        self.x += random.randint(-1, 1)
-        self.y += random.randint(-1, 1)
-        return self.x, self.y
+        if self.run_index < self.num_data-1:
+            x,y = self.angles[self.run_index].split(',')
+            self.run_index += 1
+            return float(x), float(y)
+        else:
+            sys.exit(0)
 
 regr_magic = RegrMagic()
 
@@ -50,26 +56,26 @@ def plot_line(args):
      '''
 
      # unpack the first point
-     x, y = (2., 2.)
+     x, y = (2., 0.)
      length = 5.0
      roll_angle = args[0]
      pitch_angle = args[1]
+     print(roll_angle, pitch_angle)
 
      ax1.clear()
      ax2.clear()
 
-     ax1.set_ylim([0, 4])   # set the bounds to be 10, 10
-     ax2.set_ylim([0, 4])   # set the bounds to be 10, 10
-    
+     ax1.set_ylim([-2, 2])   # set the bounds to be -20, 20
+     ax2.set_ylim([-2, 2])   # set the bounds to be -20, 20
      ax1.set_xlim([0, 4])
      ax2.set_xlim([0, 4])
 
      # plot the points
      endx, endy, startx, starty = get_start_end((x,y), length, roll_angle)
-     ax1.plot([startx, endx], [starty, endy], c='black', linewidth='2.0')
+     ax1.plot([startx, endx], [starty, endy], c='black', linewidth='8.0')
 
      endx, endy, startx, starty = get_start_end((x,y), length, pitch_angle)
-     ax2.plot([startx, endx], [starty, endy], c='black', linewidth='2.0')
+     ax2.plot([startx, endx], [starty, endy], c='black', linewidth='8.0')
 
 ani = animation.FuncAnimation(fig, plot_line, frames=frames, interval=10)
 # save the animation as an mp4.  This requires ffmpeg or mencoder to be
