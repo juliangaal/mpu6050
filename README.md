@@ -15,7 +15,7 @@ use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
 
 fn main() -> Result<(), Error<LinuxI2CError>> {
-    let i2c = I2cdev::new("/dev/i2c-1") // or privide your owm on different platforms
+    let i2c = I2cdev::new("/dev/i2c-1")
         .map_err(Error::I2c)?;
 
     let delay = Delay;
@@ -25,40 +25,26 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     loop {
         // get roll and pitch estimate
-        match mpu.get_acc_angles() {
-            Ok(r) => {
-                println!("r/p: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let acc = mpu.get_acc_angles()?;
+        println!("r/p: {:?}", acc);
 
         // get temp
-        match mpu.get_temp() {
-            Ok(r) => {
-                println!("temp: {}c", r);
-            },
-            Err(_) => {} ,
-        }
+        let temp = mpu.get_temp()?;
+        println!("temp: {}c", temp);
 
         // get gyro data, scaled with sensitivity 
-        match mpu.get_gyro() {
-            Ok(r) => {
-                println!("gyro: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let gyro = mpu.get_gyro()?;
+        println!("gyro: {:?}", gyro);
         
         // get accelerometer data, scaled with sensitivity
-        match mpu.get_acc() {
-            Ok(r) => {
-                println!("acc: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let acc = mpu.get_acc()?;
+        println!("acc: {:?}", acc);
     }
 }
 ```
-#### Compile linux example (Rapsberry Pi 3B)
+*Note*: this example uses API of version published on crates.io. If you're using code directly from master, the example may be broken
+
+#### Compile linux example (Raspberry Pi 3B)
 files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
 
 Requirements: 

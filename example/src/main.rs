@@ -10,39 +10,22 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
-    //mpu.soft_calib(200)?;
 
     loop {
         // get roll and pitch estimate
-        match mpu.get_acc_angles() {
-            Ok(r) => {
-                println!("r/p: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let acc = mpu.get_acc_angles()?;
+        println!("r/p: {:?}", acc);
 
         // get temp
-        match mpu.get_temp() {
-            Ok(r) => {
-                println!("temp: {}c", r);
-            },
-            Err(_) => {} ,
-        }
+        let temp = mpu.get_temp()?;
+        println!("temp: {}c", temp);
 
         // get gyro data, scaled with sensitivity 
-        match mpu.get_gyro() {
-            Ok(r) => {
-                println!("gyro: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let gyro = mpu.get_gyro()?;
+        println!("gyro: {:?}", gyro);
         
         // get accelerometer data, scaled with sensitivity
-        match mpu.get_acc() {
-            Ok(r) => {
-                println!("acc: {:?}", r);
-            },
-            Err(_) => {} ,
-        }
+        let acc = mpu.get_acc()?;
+        println!("acc: {:?}", acc);
     }
 }
