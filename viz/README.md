@@ -1,4 +1,4 @@
-Python script to visualize data, e.g. roll and pitch, used for testing and [demonstration purposed]()
+Python script to visualize data, e.g. roll and pitch, used for testing and [demonstration purposes]()
 
 Accepted file format from data recording, e.g.
 ```
