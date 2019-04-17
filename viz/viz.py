@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import numpy as np
 import sys
 import math
@@ -7,7 +9,7 @@ import random
 import time
 
 fig = plt.figure()
-
+iteration = 0
 ax1 = plt.subplot(211)
 ax2 = plt.subplot(212)
 
@@ -19,11 +21,15 @@ class RegrMagic(object):
         self.angles = raw_data.split('\n')
         self.num_data = len(self.angles)
         self.run_index = 0
+        self.rate = 1
+        if len(sys.argv) > 1 and len(sys.argv) < 3:
+            self.rate = int(sys.argv[1])
+            print("Rate set to", self.rate)
 
     def __call__(self) -> float:
         if self.run_index < self.num_data-1:
             x,y = self.angles[self.run_index].split(',')
-            self.run_index += 1
+            self.run_index += 100
             return float(x), float(y)
         else:
             sys.exit(0)
@@ -33,7 +39,6 @@ regr_magic = RegrMagic()
 def frames():
     while True:
         yield regr_magic()
-
 
 def get_start_end(point: (float, float), length: float, angle: float):
      x, y = point
@@ -55,11 +60,13 @@ def plot_line(args):
      Will plot the line on a 5 x 5 plot.
      '''
 
+     global iteration
      # unpack the first point
      x, y = (2., 0.)
      length = 5.0
-     roll_angle = args[0]
-     pitch_angle = args[1]
+     roll_angle = args[0] * 180.0 / math.pi
+     pitch_angle = args[1] * 180.0 / math.pi
+
      print(roll_angle, pitch_angle)
 
      ax1.clear()

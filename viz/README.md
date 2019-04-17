@@ -14,6 +14,11 @@ Accepted file format from data recording, e.g.
 10,7
 ```
 
+"rate" defines the number of steps from one data point to the next. I.e. if the sensor pumps out 100 measurements a second, it takes way too long to visualize like this. Adjust rate to e.g. 25 to do 25% faster run:
+```
+$ python3 viz.py 25
+```
+
 For requirements, see [requirements.txt](requirements.txt)
 
 On linux, you need to install `tkinter` with
