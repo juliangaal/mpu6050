@@ -48,7 +48,7 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
     }
 }
 ```
-*Note*: this example uses API of version published on crates.io, not local master branch.
+*Note*: this example uses API of version on local master branch. Some functions may not be available on published crate yet.
 
 #### Compile linux example (Raspberry Pi 3B)
 files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
