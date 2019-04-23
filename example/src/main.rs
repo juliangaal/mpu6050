@@ -13,8 +13,8 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     mpu.soft_calib(100)?;
     mpu.calc_variance(50)?;
 
-    println!("Calibrated with bias: {:?}", mpu.get_bias().take().unwrap());
-    println!("Calculated variance: {:?}", mpu.get_variance().take().unwrap());
+    println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+    println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
     loop {
         // get roll and pitch estimate
