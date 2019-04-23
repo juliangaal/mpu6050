@@ -1,4 +1,4 @@
-#![no_std]
+//#![no_std]
 
 pub mod registers;
 
@@ -14,8 +14,8 @@ use embedded_hal::{
 };
 
 /// Used for bias calculation of chip in mpu::soft_calib
-#[derive(Default)]
-struct Bias {
+#[derive(Default, Debug)]
+pub struct Bias {
     /// accelerometer x axis bias
     ax: f32,
     /// accelerometer y axis bias
@@ -50,6 +50,8 @@ impl Bias {
         self.gz /= n;
     }
 }
+
+pub type Variance = Bias;
 
 // Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
 struct Sensitivity(f32);
@@ -109,6 +111,7 @@ pub struct Mpu6050<I, D> {
     i2c: I,
     delay: D,
     bias: Option<Bias>,
+    variance: Option<Variance>,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
 }
@@ -124,6 +127,7 @@ where
             i2c,
             delay,
             bias: None,
+            variance: None,
             acc_sensitivity: AFS_SEL.0,
             gyro_sensitivity: FS_SEL.0, 
         }
@@ -135,6 +139,7 @@ where
             i2c,
             delay,
             bias: None,
+            variance: None,
             acc_sensitivity: Sensitivity::from(arange).0,
             gyro_sensitivity: Sensitivity::from(grange).0,
         }
@@ -150,9 +155,48 @@ where
         }   
 
         bias.scale(steps);
+        bias.az -= 1.0; // gravity compensation
         self.bias = Some(bias);
 
         Ok(())
+    }
+
+    pub fn get_bias(&mut self) -> &mut Option<Bias> {
+        &mut self.bias
+    }
+
+    /// Get variance of sensor by observing in resting state for steps 
+    /// number of readings
+    pub fn calc_variance(&mut self, steps: u8) -> Result<(), Mpu6050Error<E>> {
+        if let None = self.bias {
+            self.soft_calib(100)?;
+        }
+        
+        let mut variance = Variance::default();
+        let mut acc = self.get_acc()?;
+        let mut gyro = self.get_gyro()?;
+        let mut acc_diff: (f32, f32, f32); 
+        let mut gyro_diff: (f32, f32, f32);
+        let bias = &self.bias.take().unwrap();
+
+        for _ in 0..steps {
+           acc_diff = (powf(acc.0 - bias.ax, 2.0), powf(acc.1 - bias.ay, 2.0), powf(acc.2 - bias.az, 2.0)); 
+           gyro_diff = (powf(gyro.0 - bias.gx, 2.0), powf(gyro.1 - bias.gy, 2.0), powf(gyro.2 - bias.gz, 2.0));
+           variance.add(acc_diff, gyro_diff);
+           acc = self.get_acc()?;
+           gyro = self.get_gyro()?;
+        }
+
+        variance.scale(steps-1);
+        variance.az -= 1.0; // gravity compensation
+        self.variance = Some(variance);
+        println!("{:?}", self.variance.take().unwrap());
+        
+        Ok(())
+    }
+
+    pub fn get_variance(&mut self) -> &mut Option<Variance> {
+        &mut self.variance
     }
 
     /// Wakes MPU6050 with all sensors enabled (default)
