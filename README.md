@@ -78,10 +78,11 @@ $ cargo build --target=armv7-unknown-linux-gnueabihf
 - [x] read gyro data
 - [x] read acc data
 - [x] software calibration
+- [x] software measurement variance estimation
 - [x] roll, pitch estimation accelerometer only
 - [x] read temp data
 - [ ] rename constants to better match datasheet
-- [ ] complementary filter for roll, pitch estimate
+- [ ] complementary filter for roll, pitch estimate, possible on device? 
 - [ ] sample rate devider with register 25? or timer/clock control with PWR_MGMT_2
   - [ ] internal clock, register 108 `POWER_MGMT_2`, [will  cycle between  sleep mode  and  waking  up  to  take a single  sample of data from active sensors at a rate determined by LP_WAKE_CTRL](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) (page 41-43)
 - [x] plotting [csv data](https://plot.ly/python/plot-data-from-csv/)for testing? -> See viz branch
