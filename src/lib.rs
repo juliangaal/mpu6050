@@ -1,4 +1,4 @@
-//#![no_std]
+#![no_std]
 
 pub mod registers;
 
@@ -14,7 +14,7 @@ use embedded_hal::{
 };
 
 /// Used for bias calculation of chip in mpu::soft_calib
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone)]
 pub struct Bias {
     /// accelerometer x axis bias
     ax: f32,
@@ -28,16 +28,19 @@ pub struct Bias {
     gy: f32,
     /// gyro z axis bias
     gz: f32,
+    /// temperature AVERAGE: can't get bias!
+    t: f32,
 }
 
 impl Bias {
-    fn add(&mut self, acc: (f32, f32, f32), gyro: (f32, f32, f32)) {
+    fn add(&mut self, acc: (f32, f32, f32), gyro: (f32, f32, f32), temp: f32) {
         self.ax += acc.0;
         self.ay += acc.1;
         self.az += acc.2;
         self.gx += gyro.0;
         self.gy += gyro.1;
         self.gz += gyro.2;
+        self.t += temp; 
     }
 
     fn scale(&mut self, n: u8) {
@@ -48,6 +51,7 @@ impl Bias {
         self.gx /= n;
         self.gy /= n;
         self.gz /= n;
+        self.t /= n;
     }
 }
 
@@ -145,13 +149,14 @@ where
         }
     }
 
-    /// Performs software calibration with steps number of readings.
+    /// Performs software calibration with steps number of readings
+    /// of accelerometer and gyrometer sensor
     /// Readings must be made with MPU6050 in resting position
     pub fn soft_calib(&mut self, steps: u8) -> Result<(), Mpu6050Error<E>> {
         let mut bias = Bias::default();
 
         for _ in 0..steps+1 {
-            bias.add(self.get_acc()?, self.get_gyro()?);
+            bias.add(self.get_acc()?, self.get_gyro()?, self.get_temp()?);
         }   
 
         bias.scale(steps);
@@ -160,13 +165,14 @@ where
 
         Ok(())
     }
-
-    pub fn get_bias(&mut self) -> &mut Option<Bias> {
-        &mut self.bias
+    
+    /// Get bias of measurements
+    pub fn get_bias(&mut self) -> Option<&Bias> {
+        self.bias.as_ref()
     }
 
     /// Get variance of sensor by observing in resting state for steps 
-    /// number of readings
+    /// number of readings: accelerometer, gyro and temperature sensor each
     pub fn calc_variance(&mut self, steps: u8) -> Result<(), Mpu6050Error<E>> {
         if let None = self.bias {
             self.soft_calib(100)?;
@@ -175,28 +181,32 @@ where
         let mut variance = Variance::default();
         let mut acc = self.get_acc()?;
         let mut gyro = self.get_gyro()?;
+        let mut temp = self.get_temp()?;
         let mut acc_diff: (f32, f32, f32); 
         let mut gyro_diff: (f32, f32, f32);
-        let bias = &self.bias.take().unwrap();
+        let mut temp_diff: f32;
+        let bias = self.bias.clone().unwrap();
 
         for _ in 0..steps {
            acc_diff = (powf(acc.0 - bias.ax, 2.0), powf(acc.1 - bias.ay, 2.0), powf(acc.2 - bias.az, 2.0)); 
            gyro_diff = (powf(gyro.0 - bias.gx, 2.0), powf(gyro.1 - bias.gy, 2.0), powf(gyro.2 - bias.gz, 2.0));
-           variance.add(acc_diff, gyro_diff);
+           temp_diff = powf(temp - bias.t, 2.0);
+           variance.add(acc_diff, gyro_diff, temp_diff);
            acc = self.get_acc()?;
            gyro = self.get_gyro()?;
+           temp = self.get_temp()?;
         }
 
         variance.scale(steps-1);
         variance.az -= 1.0; // gravity compensation
         self.variance = Some(variance);
-        println!("{:?}", self.variance.take().unwrap());
-        
+
         Ok(())
     }
 
-    pub fn get_variance(&mut self) -> &mut Option<Variance> {
-        &mut self.variance
+    /// get variance of measurements
+    pub fn get_variance(&mut self) -> Option<&Variance> {
+        self.variance.as_ref()
     }
 
     /// Wakes MPU6050 with all sensors enabled (default)
