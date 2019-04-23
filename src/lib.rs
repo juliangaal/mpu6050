@@ -149,6 +149,29 @@ where
         }
     }
 
+    /// Wakes MPU6050 with all sensors enabled (default)
+    pub fn wake(&mut self) -> Result<(), Mpu6050Error<E>> {
+        self.write_u8(POWER_MGMT_1, 0)?;
+        self.delay.delay_ms(100u8);
+        Ok(())
+    }
+
+    /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
+    pub fn init(&mut self) -> Result<(), Mpu6050Error<E>> {
+        self.wake()?;
+        self.verify()?;
+        Ok(())
+    }
+
+    /// Verifies device to address 0x68 with WHOAMI Register
+    pub fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
+        let address = self.read_u8(WHOAMI)?;
+        if address != SLAVE_ADDR {
+            return Err(Mpu6050Error::InvalidChipId(address));
+        }
+        Ok(())
+    }
+
     /// Performs software calibration with steps number of readings
     /// of accelerometer and gyrometer sensor
     /// Readings must be made with MPU6050 in resting position
@@ -175,7 +198,7 @@ where
     /// number of readings: accelerometer, gyro and temperature sensor each
     pub fn calc_variance(&mut self, steps: u8) -> Result<(), Mpu6050Error<E>> {
         if let None = self.bias {
-            self.soft_calib(100)?;
+            self.soft_calib(steps)?;
         }
         
         let mut variance = Variance::default();
@@ -207,29 +230,6 @@ where
     /// get variance of measurements
     pub fn get_variance(&mut self) -> Option<&Variance> {
         self.variance.as_ref()
-    }
-
-    /// Wakes MPU6050 with all sensors enabled (default)
-    pub fn wake(&mut self) -> Result<(), Mpu6050Error<E>> {
-        self.write_u8(POWER_MGMT_1, 0)?;
-        self.delay.delay_ms(100u8);
-        Ok(())
-    }
-
-    /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
-    pub fn init(&mut self) -> Result<(), Mpu6050Error<E>> {
-        self.wake()?;
-        self.verify()?;
-        Ok(())
-    }
-
-    /// Verifies device to address 0x68 with WHOAMI Register
-    pub fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
-        let address = self.read_u8(WHOAMI)?;
-        if address != SLAVE_ADDR {
-            return Err(Mpu6050Error::InvalidChipId(address));
-        }
-        Ok(())
     }
 
     /// Roll and pitch estimation from raw accelerometer readings
