@@ -2,14 +2,19 @@ use mpu6050::*;
 use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
 
-fn main() -> Result<(), Error<LinuxI2CError>> {
+fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     let i2c = I2cdev::new("/dev/i2c-1")
-        .map_err(Error::I2c)?;
+        .map_err(Mpu6050Error::I2c)?;
 
     let delay = Delay;
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
+    mpu.soft_calib(100)?;
+    mpu.calc_variance(50)?;
+
+    println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+    println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
     loop {
         // get roll and pitch estimate

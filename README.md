@@ -23,6 +23,11 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
+    mpu.soft_calib(100)?;
+    mpu.calc_variance(50)?;
+
+    println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+    println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
     loop {
         // get roll and pitch estimate
@@ -43,7 +48,7 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
     }
 }
 ```
-*Note*: this example uses API of version published on crates.io, not local master branch.
+*Note*: this example uses API of version on local master branch. Some functions may not be available on published crate yet.
 
 #### Compile linux example (Raspberry Pi 3B)
 files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
@@ -73,10 +78,11 @@ $ cargo build --target=armv7-unknown-linux-gnueabihf
 - [x] read gyro data
 - [x] read acc data
 - [x] software calibration
+- [x] software measurement variance estimation
 - [x] roll, pitch estimation accelerometer only
 - [x] read temp data
 - [ ] rename constants to better match datasheet
-- [ ] complementary filter for roll, pitch estimate
+- [ ] complementary filter for roll, pitch estimate, possible on device? 
 - [ ] sample rate devider with register 25? or timer/clock control with PWR_MGMT_2
   - [ ] internal clock, register 108 `POWER_MGMT_2`, [will  cycle between  sleep mode  and  waking  up  to  take a single  sample of data from active sensors at a rate determined by LP_WAKE_CTRL](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf) (page 41-43)
 - [x] plotting [csv data](https://plot.ly/python/plot-data-from-csv/)for testing? -> See viz branch

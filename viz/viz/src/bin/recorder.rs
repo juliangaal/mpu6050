@@ -1,5 +1,4 @@
 use mpu6050::*;
-use mpu6050::Error as Mpu6050Error;
 use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
 use std::io::prelude::*;
@@ -35,7 +34,10 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
+    mpu.soft_calib(200)?;
+    mpu.calc_variance(200)?;
 
+    println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
     let mut acc_file = new_file("acc_data.txt");
     let mut gyro_file = new_file("gyro_data.txt");
@@ -45,18 +47,18 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     loop {
         // get roll and pitch estimate
         let acc = mpu.get_acc_angles()?;
-        write_x_to(&mut angles_file, format!("{},{}", acc.0, acc.1));
+        write_x_to(&mut angles_file, format!("{},{}\n", acc.0, acc.1));
 
         // get temp
         let temp = mpu.get_temp()?;
-        write_x_to(&mut temp_file, format!("{}", temp));
+        write_x_to(&mut temp_file, format!("{}\n", temp));
 
         // get gyro data, scaled with sensitivity 
         let gyro = mpu.get_gyro()?;
-        write_x_to(&mut gyro_file, format!("{} {} {}", gyro.0, gyro.1, gyro.2));
-        
+        write_x_to(&mut gyro_file, format!("{},{},{}\n", gyro.0, gyro.1, gyro.2));
+       
         // get accelerometer data, scaled with sensitivity
         let acc = mpu.get_acc()?;
-        write_x_to(&mut acc_file, format!("{} {} {}", acc.0, acc.1, acc.2));
+        write_x_to(&mut acc_file, format!("{},{},{}\n", acc.0, acc.1, acc.2));
     }
 }
