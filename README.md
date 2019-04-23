@@ -23,6 +23,11 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
+    mpu.soft_calib(100)?;
+    mpu.calc_variance(50)?;
+
+    println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+    println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
     loop {
         // get roll and pitch estimate
