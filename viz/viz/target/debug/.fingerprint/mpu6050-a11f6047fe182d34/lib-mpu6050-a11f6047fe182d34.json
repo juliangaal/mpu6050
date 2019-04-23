@@ -1,0 +1,1 @@
+{"rustc":804226499018287853,"features":"[]","target":11491499298404797424,"profile":9935990280773120926,"path":11029159912568478635,"deps":[["embedded-hal v0.2.2","embedded_hal",628776168636104478],["libm v0.1.2","libm",8742334870205999806]],"local":[{"Precalculated":"0.1.1"}],"rustflags":[],"edition":"Edition2018"}
