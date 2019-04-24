@@ -39,26 +39,26 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
 
     println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
 
-    let mut acc_file = new_file("acc_data.txt");
-    let mut gyro_file = new_file("gyro_data.txt");
-    let mut temp_file = new_file("temp_data.txt");
-    let mut angles_file = new_file("angles_data.txt");
+    let mut acc_file = new_file("acc_data_avg.txt");
+    let mut gyro_file = new_file("gyro_data_avg.txt");
+    let mut temp_file = new_file("temp_data_avg.txt");
+    let mut angles_file = new_file("angles_data_avg.txt");
 
     loop {
         // get roll and pitch estimate
-        let acc = mpu.get_acc_angles()?;
+        let acc = mpu.get_acc_angles_avg(Steps(5))?;
         write_x_to(&mut angles_file, format!("{},{}\n", acc.roll, acc.pitch));
 
         // get temp
-        let temp = mpu.get_temp()?;
+        let temp = mpu.get_temp_avg(Steps(5))?;
         write_x_to(&mut temp_file, format!("{}\n", temp));
 
         // get gyro data, scaled with sensitivity 
-        let gyro = mpu.get_gyro()?;
+        let gyro = mpu.get_gyro_avg(Steps(5))?;
         write_x_to(&mut gyro_file, format!("{},{},{}\n", gyro.x, gyro.y, gyro.z));
        
         // get accelerometer data, scaled with sensitivity
-        let acc = mpu.get_acc()?;
+        let acc = mpu.get_acc_avg(Steps(5))?;
         write_x_to(&mut acc_file, format!("{},{},{}\n", acc.x, acc.y, acc.z));
     }
 }
