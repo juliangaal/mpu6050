@@ -141,7 +141,6 @@ impl MutOps for RPReading {
 
 /// Helper struct used as number of steps for filtering
 pub struct Steps(pub u8);
-pub type Mask = Steps;
 
 // Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
 struct Sensitivity(f32);
@@ -329,12 +328,12 @@ where
     }
 
     /// Roll and pitch estimation from raw accelerometer - averaged across window readings
-    pub fn get_acc_angles_avg(&mut self, mask: Mask) -> Result<RPReading, Mpu6050Error<E>> {
+    pub fn get_acc_angles_avg(&mut self, steps: Steps) -> Result<RPReading, Mpu6050Error<E>> {
         let mut acc = self.get_acc_angles()?;
-        for _ in 0..mask.0-1 {
+        for _ in 0..steps.0-1 {
             acc.add(&self.get_acc_angles()?);
         }
-        acc.scale(mask.0);
+        acc.scale(steps.0);
         Ok(acc)
     }
 
@@ -382,12 +381,12 @@ where
     }
 
     /// Accelerometer readings in m/s^2 - averaged
-    pub fn get_acc_avg(&mut self, mask: Mask) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_acc_avg(&mut self, steps: Steps) -> Result<RotReading, Mpu6050Error<E>> {
         let mut acc = self.get_acc()?;
-        for _ in 0..mask.0-1 {
+        for _ in 0..steps.0-1 {
             acc.add(&self.get_acc()?);
         }
-        acc.scale(mask.0);
+        acc.scale(steps.0);
         Ok(acc)
     }
 
@@ -409,12 +408,12 @@ where
     }
     
     /// Gyro readings in rad/s
-    pub fn get_gyro_avg(&mut self, mask: Mask) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_gyro_avg(&mut self, steps: Steps) -> Result<RotReading, Mpu6050Error<E>> {
         let mut gyro = self.get_gyro()?;
-        for _ in 0..mask.0-1 {
+        for _ in 0..steps.0-1 {
             gyro.add(&self.get_gyro()?);
         }
-        gyro.scale(mask.0);
+        gyro.scale(steps.0);
         Ok(gyro)
     }
 
@@ -427,12 +426,12 @@ where
         Ok((raw_temp / 340.) + 36.53)
     } 
     
-    pub fn get_temp_avg(&mut self, mask: Mask) -> Result<f32, Mpu6050Error<E>> {
+    pub fn get_temp_avg(&mut self, steps: Steps) -> Result<f32, Mpu6050Error<E>> {
         let mut temp = self.get_temp()?;
-        for _ in 0..mask.0-1 {
+        for _ in 0..steps.0-1 {
             temp += self.get_temp()?;
         }
-        temp /= mask.0 as f32;
+        temp /= steps.0 as f32;
         Ok(temp)
     }
 
