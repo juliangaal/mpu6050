@@ -10,8 +10,8 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
 
     let mut mpu = Mpu6050::new(i2c, delay);
     mpu.init()?;
-    mpu.soft_calib(100)?;
-    mpu.calc_variance(50)?;
+    mpu.soft_calib(Steps(100))?;
+    mpu.calc_variance(Steps(50))?;
 
     println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
     println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
@@ -21,16 +21,32 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
         let acc = mpu.get_acc_angles()?;
         println!("r/p: {:?}", acc);
 
+        // get roll and pitch estimate - averaged accross n readings (mask)
+        let acc = mpu.get_acc_angles_avg(Mask(5))?;
+        println!("r/p avg: {:?}", acc);
+
         // get temp
         let temp = mpu.get_temp()?;
         println!("temp: {}c", temp);
+
+        // get temp - averages across n readings (mask)
+        let temp = mpu.get_temp_avg(Mask(5))?;
+        println!("temp avg: {}c", temp);
 
         // get gyro data, scaled with sensitivity 
         let gyro = mpu.get_gyro()?;
         println!("gyro: {:?}", gyro);
         
+        // get gyro data, scaled with sensitivity - averaged across n readings (mask) 
+        let gyro = mpu.get_gyro_avg(Mask(5))?;
+        println!("gyro avg: {:?}", gyro);
+        
         // get accelerometer data, scaled with sensitivity
         let acc = mpu.get_acc()?;
         println!("acc: {:?}", acc);
+        
+        // get accelerometer data, scaled with sensitivity - averages across n readings (mask)
+        let acc = mpu.get_acc_avg(Mask(5))?;
+        println!("acc avg: {:?}", acc);
     }
 }
