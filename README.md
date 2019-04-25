@@ -5,7 +5,7 @@ Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/pr
 
 [Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf) | [Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
 
-[Docs](https://docs.rs/mpu6050/0.1.1/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
+[Docs](https://docs.rs/mpu6050/0.1.2/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
 
 Visualization options for testing and development in [viz branch](https://github.com/juliangaal/mpu6050/tree/viz/viz)
 
