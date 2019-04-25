@@ -39,4 +39,4 @@ pub const ACCEL_CONFIG: u8  = 0x1c;
 pub const GYRO_CONFIG: u8 = 0x1b;
 
 /// pi
-pub const PI: f32 = 3.14159;
+pub const PI: f32 = 3.14159265358979323846;

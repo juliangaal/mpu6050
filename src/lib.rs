@@ -13,12 +13,45 @@ use embedded_hal::{
     blocking::i2c::{Write, WriteRead},
 };
 
+/// pi, taken straight from C
+pub const PI: f32 = 3.14159265358979323846;
+
 /// Operations trait for sensor readings
 pub trait MutOps {
     /// Add values to each readings fields
     fn add(&mut self, operand: &Self);
     /// Scales object fields with foo * 1/n
     fn scale(&mut self, n: u8);
+}
+
+/// Trait for conversion from/to radians/degree
+pub trait UnitConv<T> {
+    /// get radians from degree
+    fn to_rad(&self) -> T;
+    /// get radians from degree and change underlying data
+    fn to_rad_mut(&mut self);
+    /// get degree from radians
+    fn to_deg(&self) -> T;
+    /// get degree from radians and change underlying data
+    fn to_deg_mut(&mut self);
+}
+
+impl UnitConv<f32> for f32 {
+    fn to_rad(&self) -> f32 {
+        self * PI/180.0
+    } 
+    
+    fn to_rad_mut(&mut self) {
+        *self *= PI/180.0
+    }
+
+    fn to_deg(&self) -> f32 {
+        self * 180.0/PI
+    }   
+
+    fn to_deg_mut(&mut self) {
+        *self *= 180.0/PI
+    }   
 }
 
 /// Used for bias calculation of chip in mpu::soft_calib
@@ -63,6 +96,7 @@ impl Bias {
     }
 }
 
+/// Reuse Bias struct for Variance calculation
 pub type Variance = Bias;
 
 impl Variance {
@@ -77,13 +111,19 @@ impl Variance {
     }
 }
 
-/// Struct for rotation reading: gyro or accelerometer 
+/// Struct for rotation reading: gyro or accelerometer.
+/// see indivisual type definitions
 #[derive(Debug)]
 pub struct RotReading {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
+
+/// Accelerometer reading
+pub type AccReading = RotReading;
+/// Gyro Reading
+pub type GyroReading = RotReading;
 
 impl RotReading {
     fn new(x: f32, y: f32, z: f32) -> Self {
@@ -136,6 +176,32 @@ impl MutOps for RPReading {
         let n = n as f32;
         self.roll /= n;
         self.pitch /= n;
+    }
+}
+
+impl UnitConv<RPReading> for RPReading {
+    fn to_rad(&self) -> RPReading {
+        RPReading {
+            roll: self.roll.to_rad(),
+            pitch: self.pitch.to_rad(),
+        }
+    }
+
+    fn to_rad_mut(&mut self) {
+        self.roll.to_rad_mut();
+        self.pitch.to_rad_mut();
+    }
+
+    fn to_deg(&self) -> RPReading {
+        RPReading {
+            roll: self.roll.to_deg(),
+            pitch: self.pitch.to_deg(),
+        }
+    }
+
+    fn to_deg_mut(&mut self) {
+        self.roll.to_deg_mut();
+        self.pitch.to_deg_mut();
     }
 }
 
@@ -364,7 +430,7 @@ where
     }
 
     /// Accelerometer readings in m/s^2
-    pub fn get_acc(&mut self) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_acc(&mut self) -> Result<AccReading, Mpu6050Error<E>> {
         let mut acc = self.read_rot(ACC_REGX_H)?;
         
         acc.x /= self.acc_sensitivity;
@@ -381,7 +447,7 @@ where
     }
 
     /// Accelerometer readings in m/s^2 - averaged
-    pub fn get_acc_avg(&mut self, steps: Steps) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_acc_avg(&mut self, steps: Steps) -> Result<AccReading, Mpu6050Error<E>> {
         let mut acc = self.get_acc()?;
         for _ in 0..steps.0-1 {
             acc.add(&self.get_acc()?);
@@ -391,7 +457,7 @@ where
     }
 
     /// Gyro readings in rad/s
-    pub fn get_gyro(&mut self) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_gyro(&mut self) -> Result<GyroReading, Mpu6050Error<E>> {
         let mut gyro = self.read_rot(GYRO_REGX_H)?;
 
         gyro.x *= PI / (180.0 * self.gyro_sensitivity);
@@ -408,7 +474,7 @@ where
     }
     
     /// Gyro readings in rad/s
-    pub fn get_gyro_avg(&mut self, steps: Steps) -> Result<RotReading, Mpu6050Error<E>> {
+    pub fn get_gyro_avg(&mut self, steps: Steps) -> Result<GyroReading, Mpu6050Error<E>> {
         let mut gyro = self.get_gyro()?;
         for _ in 0..steps.0-1 {
             gyro.add(&self.get_gyro()?);
@@ -456,5 +522,25 @@ where
         self.i2c.write_read(SLAVE_ADDR, &[reg], buf)
             .map_err(Mpu6050Error::I2c)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_unit_conv() {
+        assert_eq!(1.0.to_rad(), 0.01745329252);
+
+        let mut deg = 1.0;
+        deg.to_rad_mut();
+        assert_eq!(deg, 0.01745329252);
+
+        assert_eq!(1.0.to_deg(), 57.295776);
+
+        let mut rad = 1.0;
+        rad.to_deg_mut();
+        assert_eq!(rad, 57.295776);
     }
 }
