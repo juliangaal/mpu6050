@@ -9,7 +9,8 @@ Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/pr
 
 Visualization options for testing and development in [viz branch](https://github.com/juliangaal/mpu6050/tree/viz/viz)
 
-### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
+### Basic usage 
+[`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
 ```rust
 use mpu6050::*;
 use linux_embedded_hal::{I2cdev, Delay};
@@ -64,7 +65,6 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
 }
 ```
-*Note*: this example uses API of version on local master branch. Some functions may not be available on published crate yet.
 
 #### Compile linux example (Raspberry Pi 3B)
 files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
