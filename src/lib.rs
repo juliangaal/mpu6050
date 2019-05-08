@@ -1,8 +1,49 @@
-#![no_std]
+//! Mpu6050 sensor driver.
+//!
+//! Register sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
+//! Data sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
+//! 
+//! To use this driver you must provide a concrete `embedded_hal` implementation.//! This example uses `linux_embedded_hal`
+//! ```
+//! let i2c = I2cdev::new("/dev/i2c-1")
+//!     .map_err(Mpu6050Error::I2c)?;
+//!
+//! let delay = Delay;
+//!
+//! let mut mpu = Mpu6050::new(i2c, delay);
+//! mpu.init()?;
+//! mpu.soft_calib(Steps(100))?;
+//! mpu.calc_variance(Steps(50))?;
+//!
+//! println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+//! println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
+//!
+//! // get roll and pitch estimate
+//! let acc = mpu.get_acc_angles()?;
+//!
+//! // get roll and pitch estimate - averaged accross n readings (steps)
+//! let acc = mpu.get_acc_angles_avg(Steps(5))?;
+//!
+//! // get temp
+//! let temp = mpu.get_temp()?;
+//!
+//! // get temp - averages across n readings (steps)
+//! let temp = mpu.get_temp_avg(Steps(5))?;
+//!
+//! // get gyro data, scaled with sensitivity 
+//! let gyro = mpu.get_gyro()?;
+//! 
+//! // get gyro data, scaled with sensitivity - averaged across n readings (steps) 
+//! let gyro = mpu.get_gyro_avg(Steps(5))?;
+//! 
+//! // get accelerometer data, scaled with sensitivity
+//! let acc = mpu.get_acc()?;
+//! 
+//! // get accelerometer data, scaled with sensitivity - averages across n readings (steps)
+//! let acc = mpu.get_acc_avg(Steps(5))?;
+//! 
 
-///! Mpu6050 sensor driver.
-///! Register sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
-///! Data sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf 
+#![no_std]
 
 pub mod registers;
 
