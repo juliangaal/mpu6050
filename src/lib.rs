@@ -49,6 +49,7 @@ pub mod registers;
 
 use crate::registers::Registers::*;
 use libm::{powf, atan2f, sqrtf};
+use nalgebra as na;
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
