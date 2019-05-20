@@ -88,8 +88,10 @@ $ cargo build --target=armv7-unknown-linux-gnueabihf
 ## TODO
 - [x] init with default settings
 - [ ] init with custom settings
+  - [x] custom sensitivity
+  - [ ] custom device initialization
 - [x] device verification
-- [ ] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
+- [x] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
 - [x] read gyro data
 - [x] read acc data
 - [x] software calibration
