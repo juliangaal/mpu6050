@@ -16,4 +16,4 @@ libm = "0.1.2"
 
 [dependencies.nalgebra]
 default-features = false
-version = "0.18"
+version = "0.18.0"
