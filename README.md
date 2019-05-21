@@ -1,10 +1,7 @@
-# MPU 6050 Rust Driver
-
-Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6500/) using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
+# `mpu6050` ![crates.io](https://img.shields.io/crates/v/mpu6050.svg)
+> no_std driver for the MPU6050 6-axis IMU
 
 [Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf) | [Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
-
-[Docs](https://docs.rs/mpu6050/0.1.2/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
 
 Visualization options for testing and development in [viz branch](https://github.com/juliangaal/mpu6050/tree/viz/viz)
 
@@ -88,8 +85,10 @@ $ cargo build --target=armv7-unknown-linux-gnueabihf
 ## TODO
 - [x] init with default settings
 - [ ] init with custom settings
+  - [x] custom sensitivity
+  - [ ] custom device initialization
 - [x] device verification
-- [ ] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
+- [x] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
 - [x] read gyro data
 - [x] read acc data
 - [x] software calibration
