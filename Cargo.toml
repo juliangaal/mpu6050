@@ -22,4 +22,6 @@ version = "0.18.0"
 i2cdev = "0.4.1"
 linux-embedded-hal = "0.2.2"
 
-
+# nix version bump, to fix https://github.com/nix-rust/nix/issues/1057#event-2356640839
+[patch.crates-io]
+i2cdev = { git = "https://github.com/juliangaal/rust-i2cdev" }
