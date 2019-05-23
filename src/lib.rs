@@ -556,7 +556,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nalgebra as na;
 
     #[test]
     fn test_unit_conv() {
