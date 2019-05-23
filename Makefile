@@ -8,7 +8,7 @@ build:
 	cargo build
 
 ext:
-	cd $(home)/example && cargo build --$(mode) --target=$(target) 
+	cargo build --examples --$(mode) --target=$(target) 
 
 viz:
 	cd $(home)/viz/viz && cargo build --$(mode) --target=$(target) 
