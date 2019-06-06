@@ -1,14 +1,12 @@
-# MPU 6050 Rust Driver 
-
-Platform agnostic driver for [MPU 6050 6-axis IMU](https://www.invensense.com/products/motion-tracking/6-axis/mpu-6500/) using [`embedded_hal`](https://github.com/rust-embedded/embedded-hal).
+# `mpu6050` ![crates.io](https://img.shields.io/crates/v/mpu6050.svg)
+> no_std driver for the MPU6050 6-axis IMU
 
 [Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf) | [Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
 
-[Docs](https://docs.rs/mpu6050/0.1.2/mpu6050/) | [Crate](https://crates.io/crates/mpu6050)
-
 Visualization options for testing and development in [viz branch](https://github.com/juliangaal/mpu6050/tree/viz/viz)
 
-### Basic usage - [`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
+### Basic usage 
+[`linux_embedded_hal`](https://github.com/rust-embedded/linux-embedded-hal) example
 ```rust
 use mpu6050::*;
 use linux_embedded_hal::{I2cdev, Delay};
@@ -31,11 +29,11 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
     loop {
         // get roll and pitch estimate
         let acc = mpu.get_acc_angles()?;
-        println!("r/p: {:?}", acc);
-
+        println!("r/p: {}", acc);
+        
         // get roll and pitch estimate - averaged accross n readings (steps)
         let acc = mpu.get_acc_angles_avg(Steps(5))?;
-        println!("r/p avg: {:?}", acc);
+        println!("r/p avg: {}", acc);
 
         // get temp
         let temp = mpu.get_temp()?;
@@ -47,49 +45,48 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 
         // get gyro data, scaled with sensitivity 
         let gyro = mpu.get_gyro()?;
-        println!("gyro: {:?}", gyro);
+        println!("gyro: {}", gyro);
         
         // get gyro data, scaled with sensitivity - averaged across n readings (steps) 
         let gyro = mpu.get_gyro_avg(Steps(5))?;
-        println!("gyro avg: {:?}", gyro);
+        println!("gyro avg: {}", gyro);
         
         // get accelerometer data, scaled with sensitivity
         let acc = mpu.get_acc()?;
-        println!("acc: {:?}", acc);
+        println!("acc: {}", acc);
         
         // get accelerometer data, scaled with sensitivity - averages across n readings (steps)
         let acc = mpu.get_acc_avg(Steps(5))?;
-        println!("acc avg: {:?}", acc);
-
+        println!("acc avg: {}", acc);		
+    }
 }
 ```
-*Note*: this example uses API of version on local master branch. Some functions may not be available on published crate yet.
 
 #### Compile linux example (Raspberry Pi 3B)
-files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
 
 Requirements: 
 ```bash
-$ apt-get install -qq gcc-armv7-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
+$ apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
 ```
-and all dependencies in `example/Cargo.toml`
 
 Rustup:
 ```bash
 $ rustup target add armv7-unknown-linux-gnueabihf
 ```
-To configure the linker use `example/.cargo/config`
+To configure the linker use `.cargo/config` file
 
 cross-compile with 
 ```bash
-$ cargo build --target=armv7-unknown-linux-gnueabihf
+$ cargo build --examples --target=armv7-unknown-linux-gnueabihf
 ```
 
 ## TODO
 - [x] init with default settings
 - [ ] init with custom settings
+  - [x] custom sensitivity
+  - [ ] custom device initialization
 - [x] device verification
-- [ ] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
+- [x] basic feature support as described [here](https://github.com/Tijndagamer/mpu6050/blob/master/mpu6050/mpu6050.py)
 - [x] read gyro data
 - [x] read acc data
 - [x] software calibration

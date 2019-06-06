@@ -1,13 +1,55 @@
+//! Mpu6050 sensor driver.
+//!
+//! Register sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
+//! Data sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
+//! 
+//! To use this driver you must provide a concrete `embedded_hal` implementation.//! This example uses `linux_embedded_hal`
+//! ```
+//! let i2c = I2cdev::new("/dev/i2c-1")
+//!     .map_err(Mpu6050Error::I2c)?;
+//!
+//! let delay = Delay;
+//!
+//! let mut mpu = Mpu6050::new(i2c, delay);
+//! mpu.init()?;
+//! mpu.soft_calib(Steps(100))?;
+//! mpu.calc_variance(Steps(50))?;
+//!
+//! println!("Calibrated with bias: {:?}", mpu.get_bias().unwrap());
+//! println!("Calculated variance: {:?}", mpu.get_variance().unwrap());
+//!
+//! // get roll and pitch estimate
+//! let acc = mpu.get_acc_angles()?;
+//!
+//! // get roll and pitch estimate - averaged accross n readings (steps)
+//! let acc = mpu.get_acc_angles_avg(Steps(5))?;
+//!
+//! // get temp
+//! let temp = mpu.get_temp()?;
+//!
+//! // get temp - averages across n readings (steps)
+//! let temp = mpu.get_temp_avg(Steps(5))?;
+//!
+//! // get gyro data, scaled with sensitivity 
+//! let gyro = mpu.get_gyro()?;
+//! 
+//! // get gyro data, scaled with sensitivity - averaged across n readings (steps) 
+//! let gyro = mpu.get_gyro_avg(Steps(5))?;
+//! 
+//! // get accelerometer data, scaled with sensitivity
+//! let acc = mpu.get_acc()?;
+//! 
+//! // get accelerometer data, scaled with sensitivity - averages across n readings (steps)
+//! let acc = mpu.get_acc_avg(Steps(5))?;
+//! ```
+
 #![no_std]
 
 pub mod registers;
 
-///! Mpu6050 sensor driver.
-///! Register sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf
-///! Data sheet: https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf 
-
-use crate::registers::*;
+use crate::registers::Registers::*;
 use libm::{powf, atan2f, sqrtf};
+use nalgebra::{Vector3, Vector2};
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
@@ -15,6 +57,11 @@ use embedded_hal::{
 
 /// pi, taken straight from C
 pub const PI: f32 = 3.14159265358979323846;
+/// Gyro Sensitivity
+pub const FS_SEL: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
+/// Calcelerometer Sensitivity
+pub const AFS_SEL: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
+
 
 /// Operations trait for sensor readings
 pub trait MutOps {
@@ -22,6 +69,16 @@ pub trait MutOps {
     fn add(&mut self, operand: &Self);
     /// Scales object fields with foo * 1/n
     fn scale(&mut self, n: u8);
+}
+
+/// Helpers for sensor readings
+pub trait Access<T> {
+    fn x(&self) -> T;
+    fn set_x(&mut self, val: T);
+    fn y(&self) -> T;
+    fn set_y(&mut self, val: T);
+    fn z(&self) -> T;
+    fn set_z(&mut self, val: T);
 }
 
 /// Trait for conversion from/to radians/degree
@@ -54,45 +111,89 @@ impl UnitConv<f32> for f32 {
     }   
 }
 
+impl Access<f32> for Vector3<f32> {
+    fn x(&self) -> f32 {
+        self[0]
+    }
+
+    fn set_x(&mut self, val: f32) {
+        self[0] = val;
+    }
+
+    fn y(&self) -> f32 {
+        self[1]
+    }
+
+    fn set_y(&mut self, val: f32) {
+        self[1] = val;
+    }
+
+    fn z(&self) -> f32 {
+        self[2]
+    }
+
+    fn set_z(&mut self, val: f32) {
+        self[2] = val
+    }
+}
+
+impl Access<f32> for Vector2<f32> {
+    fn x(&self) -> f32 {
+        self[0]
+    }
+
+    fn set_x(&mut self, val: f32) {
+        self[0] = val;
+    }
+
+    fn y(&self) -> f32 {
+        self[1]
+    }
+
+    fn set_y(&mut self, val: f32) {
+        self[1] = val;
+    }
+
+    fn z(&self) -> f32 { 
+        -1.0
+    }
+
+    fn set_z(&mut self, _val: f32) {}
+}
+
 /// Used for bias calculation of chip in mpu::soft_calib
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Bias {
-    /// accelerometer x axis bias
-    ax: f32,
-    /// accelerometer y axis bias
-    ay: f32,
-    /// accelerometer z axis bias
-    az: f32,
+    /// accelerometer axis bias
+    acc: Vector3<f32>,
     /// gyro x axis bias
-    gx: f32,
-    /// gyro y axis bias
-    gy: f32,
-    /// gyro z axis bias
-    gz: f32,
+    gyro: Vector3<f32>,
     /// temperature AVERAGE: can't get bias!
-    t: f32,
+    temp: f32,
+}
+
+impl Default for Bias {
+    fn default() -> Bias {
+        Bias {
+            acc: Vector3::<f32>::zeros(),
+            gyro: Vector3::<f32>::zeros(),
+            temp: 0.0,
+        }
+    }
 }
 
 impl Bias {
-    fn add(&mut self, acc: RotReading, gyro: RotReading, temp: f32) {
-        self.ax += acc.x;
-        self.ay += acc.y;
-        self.az += acc.z;
-        self.gx += gyro.x;
-        self.gy += gyro.y;
-        self.gz += gyro.z;
-        self.t += temp; 
+    fn add(&mut self, acc: Vector3<f32>, gyro: Vector3<f32>, temp: f32) {
+        self.acc += acc;
+        self.gyro += gyro;
+        self.temp += temp; 
     }
 
     fn scale(&mut self, n: u8) {
         let n = n as f32;
-        self.ax /= n;
-        self.ay /= n;
-        self.az /= n;
-        self.gx /= n;
-        self.gy /= n;
-        self.gz /= n;
-        self.t /= n;
+        self.acc /= n;
+        self.gyro /= n;
+        self.temp /= n;
     }
 }
 
@@ -100,108 +201,37 @@ impl Bias {
 pub type Variance = Bias;
 
 impl Variance {
-    fn add_diff(&mut self, acc_diff: (f32, f32, f32), gyro_diff: (f32, f32, f32), temp_diff: f32) {
-        self.ax += acc_diff.0;
-        self.ay += acc_diff.1;
-        self.az += acc_diff.2;
-        self.gx += gyro_diff.0;
-        self.gy += gyro_diff.1;
-        self.gz += gyro_diff.2;
-        self.t += temp_diff; 
+    fn add_diff(&mut self, acc_diff: Vector3<f32>, gyro_diff: Vector3<f32>, temp_diff: f32) {
+        self.acc += acc_diff;
+        self.gyro += gyro_diff;
+        self.temp += temp_diff; 
     }
 }
 
-/// Struct for rotation reading: gyro or accelerometer.
-/// see indivisual type definitions
-#[derive(Debug)]
-pub struct RotReading {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-}
-
-/// Accelerometer reading
-pub type AccReading = RotReading;
-/// Gyro Reading
-pub type GyroReading = RotReading;
-
-impl RotReading {
-    fn new(x: f32, y: f32, z: f32) -> Self {
-        RotReading {
-            x, 
-            y, 
-            z,
-        }
-    }
-}
-
-impl MutOps for RotReading {
-    fn add(&mut self, operand: &Self) {
-        self.x += operand.x;
-        self.y += operand.y;
-        self.z += operand.z;
-    }
-
-    fn scale(&mut self, n: u8) {
-        let n = n as f32;
-        self.x /= n;
-        self.y /= n;
-        self.z /= n;
-    }
-}
-
-/// struct for Roll/Pitch Reading
-#[derive(Debug)]
-pub struct RPReading {
-    pub roll: f32,
-    pub pitch: f32,
-}
-
-impl RPReading {
-    fn new(roll: f32, pitch: f32) -> Self {
-        RPReading {
-            roll,
-            pitch,
-        }
-    }
-}
-
-impl MutOps for RPReading {
-    fn add(&mut self, operand: &Self) {
-        self.roll += operand.roll;
-        self.pitch += operand.pitch;
-    }
-
-    fn scale(&mut self, n: u8) {
-        let n = n as f32;
-        self.roll /= n;
-        self.pitch /= n;
-    }
-}
-
-impl UnitConv<RPReading> for RPReading {
-    fn to_rad(&self) -> RPReading {
-        RPReading {
-            roll: self.roll.to_rad(),
-            pitch: self.pitch.to_rad(),
-        }
+/// Vector2 for Roll/Pitch Reading
+impl UnitConv<Vector2<f32>> for Vector2<f32> {
+    fn to_rad(&self) -> Vector2<f32> {
+        Vector2::<f32>::new(
+            self.x().to_rad(),
+            self.y().to_rad(),
+        )
     }
 
     fn to_rad_mut(&mut self) {
-        self.roll.to_rad_mut();
-        self.pitch.to_rad_mut();
+        self[0].to_rad_mut();
+        self[1].to_rad_mut();
     }
 
-    fn to_deg(&self) -> RPReading {
-        RPReading {
-            roll: self.roll.to_deg(),
-            pitch: self.pitch.to_deg(),
-        }
+    fn to_deg(&self) -> Vector2<f32> {
+        Vector2::<f32>::new(
+            self.x().to_deg(),
+            self.y().to_deg(),
+        )
     }
 
     fn to_deg_mut(&mut self) {
-        self.roll.to_deg_mut();
-        self.pitch.to_deg_mut();
+        self[0].to_deg_mut();
+        self[1].to_deg_mut();
     }
 }
 
@@ -302,7 +332,7 @@ where
 
     /// Wakes MPU6050 with all sensors enabled (default)
     pub fn wake(&mut self) -> Result<(), Mpu6050Error<E>> {
-        self.write_u8(POWER_MGMT_1, 0)?;
+        self.write_u8(POWER_MGMT_1.addr(), 0)?;
         self.delay.delay_ms(100u8);
         Ok(())
     }
@@ -314,10 +344,10 @@ where
         Ok(())
     }
 
-    /// Verifies device to address 0x68 with WHOAMI Register
+    /// Verifies device to address 0x68 with WHOAMI.addr() Register
     pub fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
-        let address = self.read_u8(WHOAMI)?;
-        if address != SLAVE_ADDR {
+        let address = self.read_u8(WHOAMI.addr())?;
+        if address != SLAVE_ADDR.addr() {
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
@@ -334,7 +364,7 @@ where
         }   
 
         bias.scale(steps.0);
-        bias.az -= 1.0; // gravity compensation
+        bias.acc[2] -= 1.0; // gravity compensation
         self.bias = Some(bias);
 
         Ok(())
@@ -357,15 +387,19 @@ where
         let mut acc = self.get_acc()?;
         let mut gyro = self.get_gyro()?;
         let mut temp = self.get_temp()?;
-        let mut acc_diff: (f32, f32, f32); 
-        let mut gyro_diff: (f32, f32, f32);
+        let mut acc_diff = Vector3::<f32>::zeros(); 
+        let mut gyro_diff = Vector3::<f32>::zeros();
         let mut temp_diff: f32;
         let bias = self.bias.clone().unwrap();
 
         for _ in 0..iterations {
-           acc_diff = (powf(acc.x - bias.ax, 2.0), powf(acc.y - bias.ay, 2.0), powf(acc.z - bias.az, 2.0)); 
-           gyro_diff = (powf(gyro.x - bias.gx, 2.0), powf(gyro.y - bias.gy, 2.0), powf(gyro.z - bias.gz, 2.0));
-           temp_diff = powf(temp - bias.t, 2.0);
+           acc_diff.set_x(powf(acc.x() - bias.acc.x(), 2.0));
+           acc_diff.set_y(powf(acc.y() - bias.acc.y(), 2.0));
+           acc_diff.set_z(powf(acc.z() - bias.acc.z(), 2.0)); 
+           gyro_diff.set_x(powf(gyro.x() - bias.gyro.x(), 2.0));
+           gyro_diff.set_y(powf(gyro.y() - bias.gyro.y(), 2.0));
+           gyro_diff.set_z(powf(gyro.z() - bias.gyro.z(), 2.0));
+           temp_diff = powf(temp - bias.temp, 2.0);
            variance.add_diff(acc_diff, gyro_diff, temp_diff);
            acc = self.get_acc()?;
            gyro = self.get_gyro()?;
@@ -373,7 +407,7 @@ where
         }
 
         variance.scale(iterations-1);
-        variance.az -= 1.0; // gravity compensation
+        variance.acc[2] -= 1.0; // gravity compensation
         self.variance = Some(variance);
 
         Ok(())
@@ -386,20 +420,21 @@ where
 
     /// Roll and pitch estimation from raw accelerometer readings
     /// NOTE: no yaw! no magnetometer present on MPU6050
-    pub fn get_acc_angles(&mut self) -> Result<RPReading, Mpu6050Error<E>> {
+    pub fn get_acc_angles(&mut self) -> Result<Vector2<f32>, Mpu6050Error<E>> {
         let acc = self.get_acc()?;
-        let roll: f32 = atan2f(acc.y, sqrtf(powf(acc.x, 2.) + powf(acc.z, 2.)));
-        let pitch: f32 = atan2f(-acc.x, sqrtf(powf(acc.y, 2.) + powf(acc.z, 2.)));
-        Ok(RPReading::new(roll, pitch))
+        Ok(Vector2::<f32>::new(
+            atan2f(acc.y(), sqrtf(powf(acc.x(), 2.) + powf(acc.z(), 2.))),
+            atan2f(-acc.x(), sqrtf(powf(acc.y(), 2.) + powf(acc.z(), 2.)))
+        ))
     }
 
     /// Roll and pitch estimation from raw accelerometer - averaged across window readings
-    pub fn get_acc_angles_avg(&mut self, steps: Steps) -> Result<RPReading, Mpu6050Error<E>> {
+    pub fn get_acc_angles_avg(&mut self, steps: Steps) -> Result<Vector2<f32>, Mpu6050Error<E>> {
         let mut acc = self.get_acc_angles()?;
         for _ in 0..steps.0-1 {
-            acc.add(&self.get_acc_angles()?);
+            acc += self.get_acc_angles()?;
         }
-        acc.scale(steps.0);
+        acc /= steps.0 as f32;
         Ok(acc)
     }
 
@@ -418,75 +453,68 @@ where
     }
 
     /// Reads rotation (gyro/acc) from specified register
-    fn read_rot(&mut self, reg: u8) -> Result<RotReading, Mpu6050Error<E>> {
+    fn read_rot(&mut self, reg: u8) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut buf: [u8; 6] = [0; 6];
         self.read_bytes(reg, &mut buf)?;
 
-        let xr = self.read_word_2c(&buf[0..2]);
-        let yr = self.read_word_2c(&buf[2..4]);
-        let zr = self.read_word_2c(&buf[4..6]);
-        
-        Ok(RotReading::new(xr as f32, yr as f32, zr as f32)) // returning as f32 makes future calculations easier
+        Ok(Vector3::<f32>::new(
+            self.read_word_2c(&buf[0..2]) as f32,
+            self.read_word_2c(&buf[2..4]) as f32,
+            self.read_word_2c(&buf[4..6]) as f32
+        ))
     }
 
     /// Accelerometer readings in m/s^2
-    pub fn get_acc(&mut self) -> Result<AccReading, Mpu6050Error<E>> {
-        let mut acc = self.read_rot(ACC_REGX_H)?;
+    pub fn get_acc(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
+        let mut acc = self.read_rot(ACC_REGX_H.addr())?;
         
-        acc.x /= self.acc_sensitivity;
-        acc.y /= self.acc_sensitivity;
-        acc.z /= self.acc_sensitivity;
+        acc /= self.acc_sensitivity;
 
         if let Some(ref bias) = self.bias { 
-            acc.x -= bias.ax;
-            acc.y -= bias.ay;
-            acc.z -= bias.az;
+            acc -= bias.acc;
         }
 
         Ok(acc)
     }
 
     /// Accelerometer readings in m/s^2 - averaged
-    pub fn get_acc_avg(&mut self, steps: Steps) -> Result<AccReading, Mpu6050Error<E>> {
+    pub fn get_acc_avg(&mut self, steps: Steps) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut acc = self.get_acc()?;
         for _ in 0..steps.0-1 {
-            acc.add(&self.get_acc()?);
+            acc += self.get_acc()?;
         }
-        acc.scale(steps.0);
+        acc /= steps.0 as f32;
         Ok(acc)
     }
 
     /// Gyro readings in rad/s
-    pub fn get_gyro(&mut self) -> Result<GyroReading, Mpu6050Error<E>> {
-        let mut gyro = self.read_rot(GYRO_REGX_H)?;
+    pub fn get_gyro(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
+        let mut gyro = self.read_rot(GYRO_REGX_H.addr())?;
 
-        gyro.x *= PI / (180.0 * self.gyro_sensitivity);
-        gyro.y *= PI / (180.0 * self.gyro_sensitivity);
-        gyro.z *= PI / (180.0 * self.gyro_sensitivity);
+        gyro *= PI / (180.0 * self.gyro_sensitivity);
 
         if let Some(ref bias) = self.bias {
-            gyro.x -= bias.gx;
-            gyro.y -= bias.gy;
-            gyro.z -= bias.gz;
+            gyro -= bias.gyro;
         }
 
         Ok(gyro)
     }
     
     /// Gyro readings in rad/s
-    pub fn get_gyro_avg(&mut self, steps: Steps) -> Result<GyroReading, Mpu6050Error<E>> {
+    pub fn get_gyro_avg(&mut self, steps: Steps) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut gyro = self.get_gyro()?;
         for _ in 0..steps.0-1 {
-            gyro.add(&self.get_gyro()?);
+            gyro += self.get_gyro()?;
         }
-        gyro.scale(steps.0);
+
+        gyro /= steps.0 as f32;
         Ok(gyro)
     }
 
     /// Temp in degrees celcius
     pub fn get_temp(&mut self) -> Result<f32, Mpu6050Error<E>> {
         let mut buf: [u8; 2] = [0; 2];
-        self.read_bytes(TEMP_OUT_H, &mut buf)?;
+        self.read_bytes(TEMP_OUT_H.addr(), &mut buf)?;
         let raw_temp = self.read_word_2c(&buf[0..2]) as f32;
 
         Ok((raw_temp / 340.) + 36.53)
@@ -503,7 +531,7 @@ where
 
     /// Writes byte to register
     pub fn write_u8(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write(SLAVE_ADDR, &[reg, byte])
+        self.i2c.write(SLAVE_ADDR.addr(), &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
         self.delay.delay_ms(10u8);
         Ok(())
@@ -512,14 +540,14 @@ where
     /// Reads byte from register
     pub fn read_u8(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
-        self.i2c.write_read(SLAVE_ADDR, &[reg], &mut byte)
+        self.i2c.write_read(SLAVE_ADDR.addr(), &[reg], &mut byte)
             .map_err(Mpu6050Error::I2c)?;
         Ok(byte[0])
     }
 
     /// Reads series of bytes into buf from specified reg
     pub fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write_read(SLAVE_ADDR, &[reg], buf)
+        self.i2c.write_read(SLAVE_ADDR.addr(), &[reg], buf)
             .map_err(Mpu6050Error::I2c)?;
         Ok(())
     }
@@ -542,5 +570,17 @@ mod tests {
         let mut rad = 1.0;
         rad.to_deg_mut();
         assert_eq!(rad, 57.295776);
+    }
+
+    #[test]
+    fn test_nalgebra() {
+        let mut v = Vector3::<f32>::new(1., 1., 1.);
+        let o = v.clone();
+        v *= 3.;
+        assert_eq!(Vector3::<f32>::new(3., 3., 3.), v);
+        v /= 3.;
+        assert_eq!(o, v);
+        v -= o;
+        assert_eq!(Vector3::<f32>::new(0., 0., 0.), v);
     }
 }
