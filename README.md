@@ -63,23 +63,21 @@ fn main() -> Result<(), Error<LinuxI2CError>> {
 ```
 
 #### Compile linux example (Raspberry Pi 3B)
-files [here](https://github.com/juliangaal/mpu6050/blob/master/example/)
 
 Requirements: 
 ```bash
-$ apt-get install -qq gcc-armv7-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
+$ apt-get install -qq gcc-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross
 ```
-and all dependencies in `example/Cargo.toml`
 
 Rustup:
 ```bash
 $ rustup target add armv7-unknown-linux-gnueabihf
 ```
-To configure the linker use `example/.cargo/config`
+To configure the linker use `.cargo/config` file
 
 cross-compile with 
 ```bash
-$ cargo build --target=armv7-unknown-linux-gnueabihf
+$ cargo build --examples --target=armv7-unknown-linux-gnueabihf
 ```
 
 ## TODO
