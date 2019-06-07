@@ -8,55 +8,10 @@ jobs:
       - run: 
           name: build and test
           command: cargo build && cargo test
-  1_34_0:
-    docker:
-      - image: circleci/rust:1.34.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build && cargo test
-  1_33_0:
-    docker:
-      - image: circleci/rust:1.33.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build && cargo test
-  1_32_0:
-    docker:
-      - image: circleci/rust:1.33.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build && cargo test
-  1_31_0:
-    docker:
-      - image: circleci/rust:1.33.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build && cargo test
-  1_30_0:
-    docker:
-      - image: circleci/rust:1.33.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build && cargo test
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - latest
-      - 1_34_0
-      - 1_33_0
-      - 1_32_0
-      - 1_31_0
-      - 1_30_0
 
