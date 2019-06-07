@@ -3,7 +3,8 @@
 //! Register sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
 //! Data sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
 //! 
-//! To use this driver you must provide a concrete `embedded_hal` implementation.//! This example uses `linux_embedded_hal`
+//! To use this driver you must provide a concrete `embedded_hal` implementation.
+//! This example uses `linux_embedded_hal`
 //! ```
 //! let i2c = I2cdev::new("/dev/i2c-1")
 //!     .map_err(Mpu6050Error::I2c)?;
