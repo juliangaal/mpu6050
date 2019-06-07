@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  latest:
     docker:
       - image: circleci/rust:latest
     steps:
@@ -8,6 +8,55 @@ jobs:
       - run: 
           name: build and test
           command: cargo build && cargo test
+  threefour:
+    docker:
+      - image: circleci/rust:1.34.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build && cargo test
+  threethree:
+    docker:
+      - image: circleci/rust:1.33.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build && cargo test
+  threetwo:
+    docker:
+      - image: circleci/rust:1.33.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build && cargo test
+  threeone:
+    docker:
+      - image: circleci/rust:1.33.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build && cargo test
+  threezero:
+    docker:
+      - image: circleci/rust:1.33.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build && cargo test
 
-
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - latest
+      - threefour
+      - threethree
+      - threetwo
+      - threeone
+      - threezero
 
