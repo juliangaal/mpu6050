@@ -7,9 +7,7 @@ jobs:
       - checkout
       - run: 
           name: build and test
-          command: | 
-            cargo build
-	    cargo test 
+          command: cargo build && cargo test
 
 
 
