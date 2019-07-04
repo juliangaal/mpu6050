@@ -12,9 +12,9 @@ use mpu6050::*;
 use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
 
-fn main() -> Result<(), Error<LinuxI2CError>> {
+fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     let i2c = I2cdev::new("/dev/i2c-1")
-        .map_err(Error::I2c)?;
+        .map_err(Mpu6050Error::I2c)?;
 
     let delay = Delay;
 
