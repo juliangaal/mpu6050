@@ -14,10 +14,10 @@
 //!     let i2c = I2cdev::new("/dev/i2c-1")
 //!         .map_err(Mpu6050Error::I2c)?;
 //!
-//!     let delay = Delay;
-//!
-//!     let mut mpu = Mpu6050::new(i2c, delay);
-//!     mpu.init()?;
+//!     let mut delay = Delay;
+//!     let mut mpu = Mpu6050::new(i2c);
+//!    
+//!     mpu.init(&mut delay)?;
 //!     mpu.soft_calib(Steps(100))?;
 //!     mpu.calc_variance(Steps(50))?;
 //!
@@ -309,25 +309,22 @@ pub enum Mpu6050Error<E> {
 }
 
 /// Handles all operations on/with Mpu6050
-pub struct Mpu6050<I, D> {
+pub struct Mpu6050<I> {
     i2c: I,
-    delay: D,
     bias: Option<Bias>,
     variance: Option<Variance>,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
 }
 
-impl<I, D, E> Mpu6050<I, D>
+impl<I, E> Mpu6050<I>
 where
-    I: Write<Error = E> + WriteRead<Error = E>,
-    D: DelayMs<u8>, 
+    I: Write<Error = E> + WriteRead<Error = E>, 
 {
     /// Side effect free constructor with default sensitivies, no calibration
-    pub fn new(i2c: I, delay: D) -> Self {
+    pub fn new(i2c: I) -> Self {
         Mpu6050 {
             i2c,
-            delay,
             bias: None,
             variance: None,
             acc_sensitivity: AFS_SEL.0,
@@ -336,10 +333,9 @@ where
     }
 
     /// custom sensitivity
-    pub fn new_with_sens(i2c: I, delay: D, arange: AccelRange, grange: GyroRange) -> Self {
+    pub fn new_with_sens(i2c: I, arange: AccelRange, grange: GyroRange) -> Self {
         Mpu6050 {
             i2c,
-            delay,
             bias: None,
             variance: None,
             acc_sensitivity: Sensitivity::from(arange).0,
@@ -348,21 +344,21 @@ where
     }
 
     /// Wakes MPU6050 with all sensors enabled (default)
-    pub fn wake(&mut self) -> Result<(), Mpu6050Error<E>> {
+    fn wake<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         self.write_u8(POWER_MGMT_1.addr(), 0)?;
-        self.delay.delay_ms(100u8);
+        delay.delay_ms(100u8);
         Ok(())
     }
 
     /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
-    pub fn init(&mut self) -> Result<(), Mpu6050Error<E>> {
-        self.wake()?;
+    pub fn init<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+        self.wake(delay)?;
         self.verify()?;
         Ok(())
     }
 
     /// Verifies device to address 0x68 with WHOAMI.addr() Register
-    pub fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
+    fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
         let address = self.read_u8(WHOAMI.addr())?;
         if address != SLAVE_ADDR.addr() {
             return Err(Mpu6050Error::InvalidChipId(address));
@@ -550,7 +546,9 @@ where
     pub fn write_u8(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
         self.i2c.write(SLAVE_ADDR.addr(), &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
-        self.delay.delay_ms(10u8);
+        // delat disabled for dev build
+        // TODO: check effects with physical unit
+        // self.delay.delay_ms(10u8);
         Ok(())
     }
     

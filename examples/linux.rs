@@ -6,10 +6,10 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     let i2c = I2cdev::new("/dev/i2c-1")
         .map_err(Mpu6050Error::I2c)?;
 
-    let delay = Delay;
-
-    let mut mpu = Mpu6050::new(i2c, delay);
-    mpu.init()?;
+    let mut delay = Delay;
+    let mut mpu = Mpu6050::new(i2c);
+    
+    mpu.init(&mut delay)?;
     mpu.soft_calib(Steps(100))?;
     mpu.calc_variance(Steps(50))?;
 
