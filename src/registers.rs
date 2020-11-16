@@ -29,6 +29,10 @@ pub enum Registers {
     ACCEL_CONFIG  = 0x1c,
     /// gyro config register
     GYRO_CONFIG = 0x1b,
+    /// Sample rate divider
+    SMPLRT_DIV = 0x19,
+    /// Digital low pass filter config
+    DLPF_CFG = 0x1a,
 }
 
 impl Registers {
