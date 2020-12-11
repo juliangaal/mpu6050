@@ -3,7 +3,7 @@
 
 ### Status
 
-* Retrieving raw data works just fine
+* Retrieving raw/averaged data works just fine
 * **Don't use/rely on (software) calibration at this point in time**
 
 [Datasheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf) | [Register Map Sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf)
