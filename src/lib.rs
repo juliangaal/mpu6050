@@ -76,7 +76,7 @@ use embedded_hal::{
 pub const PI: f32 = 3.14159265358979323846;
 /// Gyro Sensitivity
 pub const FS_SEL: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
-/// Calcelerometer Sensitivity
+/// Accelerometer Sensitivity
 pub const AFS_SEL: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
 
 
