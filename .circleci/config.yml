@@ -7,56 +7,101 @@ jobs:
       - checkout
       - run: 
           name: build and test
-          command: cargo build && cargo test
-  threefour:
+          command: cargo build
+  fournine:
     docker:
-      - image: circleci/rust:1.34.0
+      - image: circleci/rust:1.49.0
     steps:
       - checkout
       - run:
           name: build and test
-          command: cargo build && cargo test
-  threethree:
+          command: cargo build
+  foureight:
     docker:
-      - image: circleci/rust:1.33.0
+      - image: circleci/rust:1.48.0
     steps:
       - checkout
       - run:
           name: build and test
-          command: cargo build && cargo test
-  threetwo:
+          command: cargo build
+  fourseven:
     docker:
-      - image: circleci/rust:1.33.0
+      - image: circleci/rust:1.47.0
     steps:
       - checkout
       - run:
           name: build and test
-          command: cargo build && cargo test
-  threeone:
+          command: cargo build
+  foursix:
     docker:
-      - image: circleci/rust:1.33.0
+      - image: circleci/rust:1.46.0
     steps:
       - checkout
       - run:
           name: build and test
-          command: cargo build && cargo test
-  threezero:
+          command: cargo build
+  fourfive:
     docker:
-      - image: circleci/rust:1.33.0
+      - image: circleci/rust:1.45.0
     steps:
       - checkout
       - run:
           name: build and test
-          command: cargo build && cargo test
+          command: cargo build
+  fourfour:
+    docker:
+      - image: circleci/rust:1.44.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourthree:
+    docker:
+      - image: circleci/rust:1.43.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourtwo:
+    docker:
+      - image: circleci/rust:1.42.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourone:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourzero:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - latest
-      - threefour
-      - threethree
-      - threetwo
-      - threeone
-      - threezero
+      - fournine
+      - foureight
+      - fourseven
+      - foursix
+      - fourfive
+      - fourfour
+      - fourthree
+      - fourtwo
+      - fourone
+      - fourzero
 

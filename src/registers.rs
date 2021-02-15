@@ -7,11 +7,11 @@ pub enum Registers {
     SLAVE_ADDR = 0x68,
     /// Internal register to check slave addr
     WHOAMI = 0x75,
-    /// High Bytle Register Gyro x orientation
+    /// High Byte Register Gyro x orientation
     GYRO_REGX_H = 0x43,
-    /// High Bytle Register Gyro y orientation
+    /// High Byte Register Gyro y orientation
     GYRO_REGY_H = 0x45,
-    /// High Bytle Register Gyro z orientation
+    /// High Byte Register Gyro z orientation
     GYRO_REGZ_H = 0x47,
     /// High Byte Register Calc roll
     ACC_REGX_H = 0x3b,

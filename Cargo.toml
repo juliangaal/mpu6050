@@ -11,13 +11,13 @@ keywords = ["mpu6050", "imu", "embedded"]
 license = "MIT"
 
 [dependencies]
-embedded-hal = "0.2.2"
+embedded-hal = "0.2.4"
 libm = "0.2.1"
 
 [dependencies.nalgebra]
 default-features = false
-version = "0.18.0"
+version = "0.24.1"
 
 [dev-dependencies]
-i2cdev = "0.4.2"
-linux-embedded-hal = "0.2.2"
+i2cdev = "0.4.4"
+linux-embedded-hal = "0.3.0"
