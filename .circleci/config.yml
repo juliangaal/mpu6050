@@ -48,6 +48,46 @@ jobs:
       - run:
           name: build and test
           command: cargo build
+  fourfour:
+    docker:
+      - image: circleci/rust:1.44.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourthree:
+    docker:
+      - image: circleci/rust:1.43.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourtwo:
+    docker:
+      - image: circleci/rust:1.42.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourone:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
+  fourzero:
+    docker:
+      - image: circleci/rust:1.40.0
+    steps:
+      - checkout
+      - run:
+          name: build and test
+          command: cargo build
 
 workflows:
   version: 2
@@ -59,4 +99,9 @@ workflows:
       - fourseven
       - foursix
       - fourfive
+      - fourfour
+      - fourthree
+      - fourtwo
+      - fourone
+      - fourzero
 
