@@ -42,6 +42,7 @@
 #![no_std]
 
 pub mod registers;
+mod bits;
 
 use crate::registers::Registers::*;
 use libm::{powf, atan2f, sqrtf};
@@ -50,6 +51,7 @@ use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
 };
+use crate::registers::Registers;
 
 /// PI, f32
 pub const PI: f32 = core::f32::consts::PI;
@@ -62,6 +64,12 @@ pub const FS_SEL: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
 
 /// Accelerometer Sensitivity
 pub const AFS_SEL: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
+
+/// Temperature Offset
+pub const TEMP_OFFSET: f32 = 36.53;
+
+/// Temperature Sensitivity
+pub const TEMP_SENSITIVITY: f32 = 340.;
 
 // Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
 struct Sensitivity(f32);
@@ -147,7 +155,7 @@ where
 
     /// Wakes MPU6050 with all sensors enabled (default)
     fn wake<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
-        self.write_u8(POWER_MGMT_1.addr(), 0)?;
+        self.write_byte(POWER_MGMT_1.addr(), 0)?;
         delay.delay_ms(100u8);
         Ok(())
     }
@@ -161,7 +169,7 @@ where
 
     /// Verifies device to address 0x68 with WHOAMI.addr() Register
     fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
-        let address = self.read_u8(WHOAMI.addr())?;
+        let address = self.read_byte(WHOAMI.addr())?;
         if address != SLAVE_ADDR.addr() {
             return Err(Mpu6050Error::InvalidChipId(address));
         }
@@ -228,11 +236,12 @@ where
         self.read_bytes(TEMP_OUT_H.addr(), &mut buf)?;
         let raw_temp = self.read_word_2c(&buf[0..2]) as f32;
 
-        Ok((raw_temp / 340.) + 36.53)
+        // According to revision 4.2
+        Ok((raw_temp / TEMP_SENSITIVITY) + TEMP_OFFSET)
     }
 
     /// Writes byte to register
-    pub fn write_u8(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
+    pub fn write_byte(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
         self.i2c.write(SLAVE_ADDR.addr(), &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
         // delay disabled for dev build
@@ -240,9 +249,24 @@ where
         // self.delay.delay_ms(10u8);
         Ok(())
     }
-    
+
+    /// Enables bit n at register address reg
+    pub fn write_bit(&mut self, reg: u8, bit_n: u8, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        let mut byte: [u8; 1] = [0; 1];
+        self.read_bytes(reg, &mut byte)?;
+        bits::set_bit_n(byte[0], bit_n, enable);
+        Ok(self.write_byte(reg, byte[0])?)
+    }
+
+    /// Read bit n from register
+    fn read_bit(&mut self, reg: u8, bit_n: u8) -> Result<u8, Mpu6050Error<E>> {
+        let mut byte: [u8; 1] = [0; 1];
+        self.read_bytes(reg, &mut byte)?;
+        Ok(bits::get_bit_n(&byte, bit_n))
+    }
+
     /// Reads byte from register
-    pub fn read_u8(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
+    pub fn read_byte(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
         self.i2c.write_read(SLAVE_ADDR.addr(), &[reg], &mut byte)
             .map_err(Mpu6050Error::I2c)?;
@@ -256,3 +280,4 @@ where
         Ok(())
     }
 }
+

@@ -1,5 +1,7 @@
 //! All constants used in the driver, mostly register addresses
-
+//! Register map: https://arduino.ua/docs/RM-MPU-6000A.pdf
+//! Datasheet with WAY more info about interrupts (Revision 3.2) https://www.cdiweb.com/datasheets/invensense/ps-mpu-6000a.pdf
+//!
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
 pub enum Registers {
@@ -34,5 +36,18 @@ pub enum Registers {
 impl Registers {
     pub fn addr(&self) -> u8 {
         *self as u8
-    } 
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
+pub enum Bits {
+    /// Accelerometer high pass filter bit: See 4.5 Register 28
+    ACCEL_HPF_BIT = 2,
+}
+
+impl Bits {
+    pub fn byte(&self) -> u8 {
+        *self as u8
+    }
 }
