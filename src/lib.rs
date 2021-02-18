@@ -43,12 +43,10 @@
 
 pub mod device;
 pub mod bits;
-pub mod sensitivity;
 pub mod range;
 
-use crate::sensitivity::*;
 use crate::range::*;
-use crate::device::{Registers::*, Bits};
+use crate::device::{*, Registers::*, Bits};
 
 use libm::{powf, atan2f, sqrtf};
 use nalgebra::{Vector3, Vector2};
@@ -97,8 +95,8 @@ where
     pub fn new_with_sens(i2c: I, arange: AccelRange, grange: GyroRange) -> Self {
         Mpu6050 {
             i2c,
-            acc_sensitivity: Sensitivity::from(arange).0,
-            gyro_sensitivity: Sensitivity::from(grange).0,
+            acc_sensitivity: arange.sensitivity(),
+            gyro_sensitivity: grange.sensitivity(),
         }
     }
 
@@ -113,6 +111,9 @@ where
     pub fn init<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         self.wake(delay)?;
         self.verify()?;
+        self.set_accel_range(AccelRange::G2)?;
+        self.set_gyro_range(GyroRange::D250)?;
+        self.set_accel_hpf(ACCEL_HPF::_RESET)?;
         Ok(())
     }
 
@@ -125,19 +126,60 @@ where
         Ok(())
     }
 
-    pub fn set_gyro_range(&mut self, scale: GyroRange) -> Result<(), Mpu6050Error<E>> {
+    /// set accel high pass filter mode
+    pub fn set_accel_hpf(&mut self, mode: ACCEL_HPF) -> Result<(), Mpu6050Error<E>> {
         Ok(
-            self.write_bits(GYRO_CONFIG.addr(),
-                            Bits::GYRO_CONFIG_FS_SEL_BIT,
-                            Bits::GYRO_CONFIG_FS_SEL_LENGTH,
-                            scale as u8)?
+            self.write_bits(ACCEL_CONFIG.addr(),
+                        Bits::ACCEL_CONFIG_ACCEL_HPF_BIT,
+                        Bits::ACCEL_CONFIG_ACCEL_HPF_LENGTH, mode as u8)?
         )
     }
 
+    /// get accel high pass filter mode
+    pub fn get_accel_hpf(&mut self) -> Result<ACCEL_HPF, Mpu6050Error<E>> {
+        let mode: u8 = self.read_bits(ACCEL_CONFIG.addr(),
+                                      Bits::ACCEL_CONFIG_ACCEL_HPF_BIT,
+                                      Bits::ACCEL_CONFIG_ACCEL_HPF_LENGTH)?;
+
+        Ok(ACCEL_HPF::from(mode))
+    }
+
+    /// Set gyro range, and update sensitivity accordingly
+    pub fn set_gyro_range(&mut self, range: GyroRange) -> Result<(), Mpu6050Error<E>> {
+        self.write_bits(GYRO_CONFIG.addr(),
+                        Bits::GYRO_CONFIG_FS_SEL_BIT,
+                        Bits::GYRO_CONFIG_FS_SEL_LENGTH,
+                        range as u8)?;
+
+        self.gyro_sensitivity = range.sensitivity();
+        Ok(())
+    }
+
+    /// set accel range, and update sensitivy accordingly
+    pub fn set_accel_range(&mut self, range: AccelRange) -> Result<(), Mpu6050Error<E>> {
+        self.write_bits(ACCEL_CONFIG.addr(),
+                        Bits::ACCEL_CONFIG_FS_SEL_BIT,
+                        Bits::ACCEL_CONFIG_FS_SEL_LENGTH,
+                        range as u8)?;
+
+        self.acc_sensitivity = range.sensitivity();
+        Ok(())
+    }
+
+    /// get current accel_range
+    pub fn get_accel_range(&mut self) -> Result<AccelRange, Mpu6050Error<E>> {
+        let byte = self.read_bits(ACCEL_CONFIG.addr(),
+                       Bits::ACCEL_CONFIG_FS_SEL_BIT,
+                       Bits::ACCEL_CONFIG_FS_SEL_LENGTH)?;
+
+        Ok(AccelRange::from(byte))
+    }
+
+    /// get current gyro range
     pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
         let byte = self.read_bits(GYRO_CONFIG.addr(),
-                       Bits::GYRO_CONFIG_FS_SEL_BIT,
-                       Bits::GYRO_CONFIG_FS_SEL_LENGTH)?;
+                                  Bits::GYRO_CONFIG_FS_SEL_BIT,
+                                  Bits::GYRO_CONFIG_FS_SEL_LENGTH)?;
 
         Ok(GyroRange::from(byte))
     }
@@ -239,6 +281,7 @@ where
         Ok(bits::get_bit(byte[0], bit_n))
     }
 
+    /// Read bits at register reg, starting with bit start_bit, until start_bit+length
     pub fn read_bits(&mut self, reg: u8, start_bit: u8, length: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
         self.read_bytes(reg, &mut byte)?;
