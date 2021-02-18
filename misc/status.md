@@ -20,8 +20,8 @@
 | <ul><li> -[ ] </li></ul>|[0x18] ZG_OFFS_USRL|	R/W ||
 | <ul><li> -[ ] </li></ul>|[0x19] SMPLRT_DIV|	R/W |	[7:0] SMPLRT_DIV|
 | <ul><li> -[ ] </li></ul>|[0x1A] CONFIG|	R/W |	 	[5:3] EXT_SYNC_SET	[2:0] DLPF_CFG|
-| <ul><li> -[ ] </li></ul>|[0x1B] GYRO_CONFIG|	R/W |	[7] XG_ST	[6] YG_ST	[5] ZG_ST	[4:3] FS_SEL|	 
-| <ul><li> -[ ] </li></ul>|[0x1C] ACCEL_CONFIG|	R/W |	[7] XA_ST	[6] YA_ST	[5] ZA_ST	[4:3] AFS_SEL	[2:0] ACCEL_HPF|
+| <ul><li> -[x] Registers </li><li> -[x] API</li></ul>|[0x1B] GYRO_CONFIG|	R/W |	[7] XG_ST	[6] YG_ST	[5] ZG_ST	[4:3] FS_SEL|	 
+| <ul><li> -[x] Registers </li><li> -[x] API</li></ul>|[0x1C] ACCEL_CONFIG|	R/W |	[7] XA_ST	[6] YA_ST	[5] ZA_ST	[4:3] AFS_SEL	[2:0] ACCEL_HPF|
 | <ul><li> -[ ] </li></ul>|[0x1D] FF_THR|	R/W |	[7:0] FF_THR|
 | <ul><li> -[ ] </li></ul>|[0x1E] FF_DUR|	R/W |	[7:0] FF_DUR|
 | <ul><li> -[ ] </li></ul>|[0x1F] MOT_THR|	R/W |	[7:0] MOT_THR|
@@ -52,20 +52,20 @@
 | <ul><li> -[ ] </li></ul>|[0x38] INT_ENABLE|	R/W |	[7] FF_EN	[6] MOT_EN	[5] ZMOT_EN	[4] FIFO_OFLOW_EN	[3] I2C_MST_INT_EN	[2] PLL_RDY_INT_EN	[1] DMP_INT_EN	[0] RAW_RDY_EN|
 | <ul><li> -[ ] </li></ul>|[0x39] DMP_INT_STATUS|	RO|	 	[5] DMP_INT_5	[4] DMP_INT_4	[3] DMP_INT_3	[2] DMP_INT_2	[1] DMP_INT_1	[0] DMP_INT_0|
 | <ul><li> -[ ] </li></ul>|[0x3A] INT_STATUS|	RO|	[7] FF_INT	[6] MOT_INT	[5] ZMOT_INT	[4] FIFO_OFLOW_INT	[3] I2C_MST_INT	[2] PLL_RDY_INT	[1] DMP_INT	[0] RAW_RDY_INT|
-| <ul><li> -[ ] </li></ul>|[0x3B] ACCEL_XOUT_H|	RO|	[15:0] ACCEL_XOUT|
-| <ul><li> -[ ] </li></ul>|[0x3C] ACCEL_XOUT_L|	RO|
-| <ul><li> -[ ] </li></ul>|[0x3D] ACCEL_YOUT_H|	RO|	[15:0] ACCEL_YOUT|
-| <ul><li> -[ ] </ul></li>|[0x3E] ACCEL_YOUT_L|	RO|
-| <ul><li> -[ ] </ul></li>|[0x3F] ACCEL_ZOUT_H|	RO|	[15:0] ACCEL_ZOUT|
-| <ul><li> -[ ] </ul></li>|[0x40] ACCEL_ZOUT_L|	RO||
-| <ul><li> -[ ] </ul></li>|[0x41] TEMP_OUT_H|	RO|	[15:0] TEMP_OUT|
-| <ul><li> -[ ] </ul></li>|[0x42] TEMP_OUT_L|	RO||
-| <ul><li> -[ ] </ul></li>|[0x43] GYRO_XOUT_H|	RO	[15:0] GYRO_XOUT|
-| <ul><li> -[ ] </ul></li>|[0x44] GYRO_XOUT_L|	RO||
-| <ul><li> -[ ] </ul></li>|[0x45] GYRO_YOUT_H|	RO|	[15:0] GYRO_YOUT|
-| <ul><li> -[ ] </ul></li>|[0x46] GYRO_YOUT_L|	RO||
-| <ul><li> -[ ] </ul></li>|[0x47] GYRO_ZOUT_H|	RO|	[15:0] GYRO_ZOUT|
-| <ul><li> -[ ] </ul></li>|[0x48] GYRO_ZOUT_L|	RO||
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x3B] ACCEL_XOUT_H|	RO|	[15:0] ACCEL_XOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x3C] ACCEL_XOUT_L|	RO|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x3D] ACCEL_YOUT_H|	RO|	[15:0] ACCEL_YOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x3E] ACCEL_YOUT_L|	RO|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x3F] ACCEL_ZOUT_H|	RO|	[15:0] ACCEL_ZOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x40] ACCEL_ZOUT_L|	RO||
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x41] TEMP_OUT_H|	RO|	[15:0] TEMP_OUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x42] TEMP_OUT_L|	RO||
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x43] GYRO_XOUT_H|	RO | [15:0] GYRO_XOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x44] GYRO_XOUT_L|	RO||
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x45] GYRO_YOUT_H|	RO|	[15:0] GYRO_YOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x46] GYRO_YOUT_L|	RO||
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x47] GYRO_ZOUT_H|	RO|	[15:0] GYRO_ZOUT|
+| <ul><li> -[x] Registers </li><li> -[x] API </li></ul>|[0x48] GYRO_ZOUT_L|	RO||
 | <ul><li> -[ ] </ul></li>|[0x49] EXT_SENS_DATA_00|	RO	|[7:0] EXT_SENS_DATA_00|
 | <ul><li> -[ ] </ul></li>|[0x4A] EXT_SENS_DATA_01|	RO	|[7:0] EXT_SENS_DATA_01|
 | <ul><li> -[ ] </ul></li>|[0x4B] EXT_SENS_DATA_02|	RO	|[7:0] EXT_SENS_DATA_02|
@@ -100,7 +100,7 @@
 | <ul><li> -[ ] </li></ul>|[0x69] MOT_DETECT_CTRL|	R/W |	 	[5:4] ACCEL_ON_DELAY	[3:2] FF_COUNT	[1:0] MOT_COUNT|
 | <ul><li> -[ ] </li></ul>|[0x6A] USER_CTRL|	R/W |	[7] DMP_EN	[6] FIFO_EN	[5] I2C_MST_EN	[4] I2C_IF_DIS	[3] DMP_RESET	[2] FIFO_RESET	[1] I2C_MST_RESET	[0] SIG_COND_RESET|
 | <ul><li> -[ ] </li></ul>|[0x6B] PWR_MGMT_1|	R/W |	[7] DEVICE_RESET	[6] SLEEP	[5] CYCLE	 	[3] TEMP_DIS	[2:0] CLK_SEL|
-| <ul><li> -[ ] </li></ul>|[0x6C] PWR_MGMT_2|	R/W |	[7] LP_WAKE_CTRL	 	[5] STBY_ZG	[4] STBY_YA	[3] STBY_ZA	[2] STBY_XG	[1] STBY_YG	[0] STBY_ZG|
+| <ul><li> -[x] Registers </li></ul>|[0x6C] PWR_MGMT_2|	R/W |	[7] LP_WAKE_CTRL	 	[5] STBY_ZG	[4] STBY_YA	[3] STBY_ZA	[2] STBY_XG	[1] STBY_YG	[0] STBY_ZG|
 | <ul><li> -[ ] </li></ul>|[0x6D] BANK_SEL|	R/W |	 	[6] PRFTCH_EN	[5] CFG_USER_BANK	[4:0] MEM_SEL|
 | <ul><li> -[ ] </li></ul>|[0x6E] MEM_START_ADDR|	R/W |	[7:0] START_ADDR|
 | <ul><li> -[ ] </li></ul>|[0x6F] MEM_R_W|	R/W |	[7:0] MEM_R_W|
@@ -109,4 +109,4 @@
 | <ul><li> -[ ] </li></ul>|[0x72] FIFO_COUNTH|	R/W |	[15:0] FIFO_COUNT|
 | <ul><li> -[ ] </li></ul>|[0x73] FIFO_COUNTL|	R/W ||
 | <ul><li> -[ ] </li></ul>|[0x74] FIFO_R_W|	R/W |	[7:0] FIFO_R_W|
-| <ul><li> -[ ] </li></ul>|[0x75] WHO_AM_I|	RO	| 	[6:1] WHO_AM_I	| 
+| <ul><li> -[x] Registers </li></ul>|[0x75] WHO_AM_I|	RO	| 	[6:1] WHO_AM_I	| 
