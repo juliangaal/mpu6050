@@ -1,26 +1,26 @@
 |Usable|Register|Access|Bits|
 |:-----|:------:|:-----:|---:|
-| -[ ] |[0x00] AUX_VDDIO|	R/W |	[7] AUX_VDDIO	[6:1] XG_OFFS_TC	[0] OTP_BNK_VLD| 
-| -[ ] |[0x01] YG_OFFS_TC|	R/W |	 	[6:1] YG_OFFS_TC|
-| -[ ] |[0x02] ZG_OFFS_TC|	R/W |	 	[6:1] ZG_OFFS_TC|
-| -[ ] |[0x03] X_FINE_GAIN|	R/W |	[7:0] X_FINE_GAIN|
-| -[ ] |[0x04] Y_FINE_GAIN|	R/W |	[7:0] Y_FINE_GAIN|
-| -[ ] |[0x05] Z_FINE_GAIN|	R/W |	[7:0] Z_FINE_GAIN|
-| -[ ] |[0x06] XA_OFFS_H|	R/W |	[15:0] XA_OFFS|
-| -[ ] |[0x07] XA_OFFS_L_TC|	R/W ||
-| -[ ] |[0x08] YA_OFFS_H|	R/W |	[15:0] YA_OFFS|
-| -[ ] |[0x09] YA_OFFS_L_TC|	R/W ||
-| -[ ] |[0x0A] ZA_OFFS_H|	R/W |	[15:0] ZA_OFFS|
-| -[ ] |[0x0B] ZA_OFFS_L_TC|	R/W ||
-| -[ ] |[0x13] XG_OFFS_USRH|	R/W |	[15:0] XG_OFFS_USR|
-| -[ ] |[0x14] XG_OFFS_USRL|	R/W ||
-| -[ ] |[0x15] YG_OFFS_USRH|	R/W |	[15:0] YG_OFFS_USR|
-| -[ ] |[0x16] YG_OFFS_USRL|	R/W ||
-| -[ ] |[0x17] ZG_OFFS_USRH|	R/W |	[15:0] ZG_OFFS_USR|
-| -[ ] |[0x18] ZG_OFFS_USRL|	R/W ||
-| -[ ] |[0x19] SMPLRT_DIV|	R/W |	[7:0] SMPLRT_DIV|
-| -[ ] |[0x1A] CONFIG|	R/W |	 	[5:3] EXT_SYNC_SET	[2:0] DLPF_CFG|
-| -[ ] |[0x1B] GYRO_CONFIG|	R/W |	[7] XG_ST	[6] YG_ST	[5] ZG_ST	[4:3] FS_SEL|	 
+| <ul><li> -[ ] </li></ul>|[0x00] AUX_VDDIO|	R/W |	[7] AUX_VDDIO	[6:1] XG_OFFS_TC	[0] OTP_BNK_VLD| 
+| <ul><li> -[ ] </li></ul>|[0x01] YG_OFFS_TC|	R/W |	 	[6:1] YG_OFFS_TC|
+| <ul><li> -[ ] </li></ul>|[0x02] ZG_OFFS_TC|	R/W |	 	[6:1] ZG_OFFS_TC|
+| <ul><li> -[ ] </li></ul>|[0x03] X_FINE_GAIN|	R/W |	[7:0] X_FINE_GAIN|
+| <ul><li> -[ ] </li></ul>|[0x04] Y_FINE_GAIN|	R/W |	[7:0] Y_FINE_GAIN|
+| <ul><li> -[ ] </li></ul>|[0x05] Z_FINE_GAIN|	R/W |	[7:0] Z_FINE_GAIN|
+| <ul><li> -[ ] </li></ul>|[0x06] XA_OFFS_H|	R/W |	[15:0] XA_OFFS|
+| <ul><li> -[ ] </li></ul>|[0x07] XA_OFFS_L_TC|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x08] YA_OFFS_H|	R/W |	[15:0] YA_OFFS|
+| <ul><li> -[ ] </li></ul>|[0x09] YA_OFFS_L_TC|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x0A] ZA_OFFS_H|	R/W |	[15:0] ZA_OFFS|
+| <ul><li> -[ ] </li></ul>|[0x0B] ZA_OFFS_L_TC|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x13] XG_OFFS_USRH|	R/W |	[15:0] XG_OFFS_USR|
+| <ul><li> -[ ] </li></ul>|[0x14] XG_OFFS_USRL|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x15] YG_OFFS_USRH|	R/W |	[15:0] YG_OFFS_USR|
+| <ul><li> -[ ] </li></ul>|[0x16] YG_OFFS_USRL|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x17] ZG_OFFS_USRH|	R/W |	[15:0] ZG_OFFS_USR|
+| <ul><li> -[ ] </li></ul>|[0x18] ZG_OFFS_USRL|	R/W ||
+| <ul><li> -[ ] </li></ul>|[0x19] SMPLRT_DIV|	R/W |	[7:0] SMPLRT_DIV|
+| <ul><li> -[ ] </li></ul>|[0x1A] CONFIG|	R/W |	 	[5:3] EXT_SYNC_SET	[2:0] DLPF_CFG|
+| <ul><li> -[ ] </li></ul>|[0x1B] GYRO_CONFIG|	R/W |	[7] XG_ST	[6] YG_ST	[5] ZG_ST	[4:3] FS_SEL|	 
 | <ul><li> -[ ] </li></ul>|[0x1C] ACCEL_CONFIG|	R/W |	[7] XA_ST	[6] YA_ST	[5] ZA_ST	[4:3] AFS_SEL	[2:0] ACCEL_HPF|
 | <ul><li> -[ ] </li></ul>|[0x1D] FF_THR|	R/W |	[7:0] FF_THR|
 | <ul><li> -[ ] </li></ul>|[0x1E] FF_DUR|	R/W |	[7:0] FF_DUR|
@@ -28,7 +28,7 @@
 | <ul><li> -[ ] </li></ul>|[0x20] MOT_DUR|	R/W |	[7:0] MOT_DUR|
 | <ul><li> -[ ] </li></ul>|[0x21] ZRMOT_THR|	R/W |	[7:0] ZRMOT_THR|
 | <ul><li> -[ ] </li></ul>|[0x22] ZRMOT_DUR|	R/W |	[7:0] ZRMOT_DUR|
-| <ul><li> -[ ] </li></ul>|[0x23] FIFO_EN|	R/W |	[7] TEMP_FIFO_EN	[6] XG_FIFO_EN	[5] YG_FIFO_EN	[4] ZG_FIFO_EN	[3] ACCEL_FIFO_EN	[2] SLV2_FIFO_EN	[1] SLV1_FIFO_EN	[0] SLV0_FIFO_EN|
+| <ul><li> -[x] </li></ul>|[0x23] FIFO_EN|	R/W |	[7] TEMP_FIFO_EN	[6] XG_FIFO_EN	[5] YG_FIFO_EN	[4] ZG_FIFO_EN	[3] ACCEL_FIFO_EN	[2] SLV2_FIFO_EN	[1] SLV1_FIFO_EN	[0] SLV0_FIFO_EN|
 | <ul><li> -[ ] </li></ul>|[0x24] I2C_MST_CTRL|	R/W |	[7] MULT_MST_EN	[6] WAIT_FOR_ES	[5] SLV_3_FIFO_EN	[4] I2C_MST_P_NSR	[3:0] I2C_MST_CLK|
 | <ul><li> -[ ] </li></ul>|[0x25] I2C_SLV0_ADDR|	R/W |	[7] I2C_SLV0_RW	[6:0] I2C_SLV0_ADDR|
 | <ul><li> -[ ] </li></ul>|[0x26] I2C_SLV0_REG|	R/W |	[7:0] I2C_SLV0_REG|
