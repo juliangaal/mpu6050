@@ -41,13 +41,12 @@ impl Registers {
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-pub enum Bits {
-    /// Accelerometer high pass filter bit: See 4.5 Register 28
-    ACCEL_HPF_BIT = 2,
-}
+pub struct Bits;
+
 
 impl Bits {
-    pub fn byte(&self) -> u8 {
-        *self as u8
-    }
+    /// Accelerometer high pass filter bit: See 4.5 Register 28
+    pub const ACCEL_HPF_BIT: u8 = 3;
+    pub const GYRO_CONFIG_FS_SEL_BIT: u8 = 4;
+    pub const GYRO_CONFIG_FS_SEL_LENGTH: u8 = 3;
 }

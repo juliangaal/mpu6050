@@ -41,78 +41,27 @@
 
 #![no_std]
 
-pub mod registers;
-mod bits;
+pub mod device;
+pub mod bits;
+pub mod sensitivity;
+pub mod range;
 
-use crate::registers::Registers::*;
+use crate::sensitivity::*;
+use crate::range::*;
+use crate::device::{Registers::*, Bits};
+
 use libm::{powf, atan2f, sqrtf};
 use nalgebra::{Vector3, Vector2};
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
 };
-use crate::registers::Registers;
 
 /// PI, f32
 pub const PI: f32 = core::f32::consts::PI;
 
 /// PI / 180, for conversion to radians
 pub const PI_180: f32 = PI / 180.0;
-
-/// Gyro Sensitivity
-pub const FS_SEL: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
-
-/// Accelerometer Sensitivity
-pub const AFS_SEL: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
-
-/// Temperature Offset
-pub const TEMP_OFFSET: f32 = 36.53;
-
-/// Temperature Sensitivity
-pub const TEMP_SENSITIVITY: f32 = 340.;
-
-// Helper struct to convert Sensor measurement range to appropriate values defined in datasheet
-struct Sensitivity(f32);
-
-// Converts accelerometer range to correction/scaling factor, see table p. 29 or register sheet
-impl From<AccelRange> for Sensitivity {
-    fn from(range: AccelRange) -> Sensitivity {
-        match range {
-            AccelRange::G2 => return Sensitivity(AFS_SEL.0),
-            AccelRange::G4 => return Sensitivity(AFS_SEL.1),
-            AccelRange::G8 => return Sensitivity(AFS_SEL.2),
-            AccelRange::G16 => return Sensitivity(AFS_SEL.3),
-        }
-    }
-}
-
-// Converts gyro range to correction/scaling factor, see table p. 31 or register sheet
-impl From<GyroRange> for Sensitivity {
-    fn from(range: GyroRange) -> Sensitivity {
-        match range {
-            GyroRange::DEG250 => return Sensitivity(FS_SEL.0),
-            GyroRange::DEG500 => return Sensitivity(FS_SEL.1),
-            GyroRange::DEG1000 => return Sensitivity(FS_SEL.2),
-            GyroRange::DEG2000 => return Sensitivity(FS_SEL.3),
-        }
-    }
-}
-
-/// Defines accelerometer range/sensivity
-pub enum AccelRange {
-    G2,
-    G4,
-    G8,
-    G16,
-}
-
-/// Defines gyro range/sensitivity
-pub enum GyroRange {
-    DEG250,
-    DEG500,
-    DEG1000,
-    DEG2000,
-}
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -139,8 +88,8 @@ where
     pub fn new(i2c: I) -> Self {
         Mpu6050 {
             i2c,
-            acc_sensitivity: AFS_SEL.0,
-            gyro_sensitivity: FS_SEL.0, 
+            acc_sensitivity: ACCEL_SENS.0,
+            gyro_sensitivity: GYRO_SENS.0, 
         }
     }
 
@@ -174,6 +123,23 @@ where
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
+    }
+
+    pub fn set_gyro_range(&mut self, scale: GyroRange) -> Result<(), Mpu6050Error<E>> {
+        Ok(
+            self.write_bits(GYRO_CONFIG.addr(),
+                            Bits::GYRO_CONFIG_FS_SEL_BIT,
+                            Bits::GYRO_CONFIG_FS_SEL_LENGTH,
+                            scale as u8)?
+        )
+    }
+
+    pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
+        let byte = self.read_bits(GYRO_CONFIG.addr(),
+                       Bits::GYRO_CONFIG_FS_SEL_BIT,
+                       Bits::GYRO_CONFIG_FS_SEL_LENGTH)?;
+
+        Ok(GyroRange::from(byte))
     }
 
     /// Roll and pitch estimation from raw accelerometer readings
@@ -254,7 +220,15 @@ where
     pub fn write_bit(&mut self, reg: u8, bit_n: u8, enable: bool) -> Result<(), Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
         self.read_bytes(reg, &mut byte)?;
-        bits::set_bit_n(byte[0], bit_n, enable);
+        bits::set_bit(&mut byte[0], bit_n, enable);
+        Ok(self.write_byte(reg, byte[0])?)
+    }
+
+    /// Write bits data at reg from start_bit to start_bit+length
+    pub fn write_bits(&mut self, reg: u8, start_bit: u8, length: u8, data: u8) -> Result<(), Mpu6050Error<E>> {
+        let mut byte: [u8; 1] = [0; 1];
+        self.read_bytes(reg, &mut byte)?;
+        bits::set_bits(&mut byte[0], start_bit, length, data);
         Ok(self.write_byte(reg, byte[0])?)
     }
 
@@ -262,7 +236,13 @@ where
     fn read_bit(&mut self, reg: u8, bit_n: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
         self.read_bytes(reg, &mut byte)?;
-        Ok(bits::get_bit_n(&byte, bit_n))
+        Ok(bits::get_bit(byte[0], bit_n))
+    }
+
+    pub fn read_bits(&mut self, reg: u8, start_bit: u8, length: u8) -> Result<u8, Mpu6050Error<E>> {
+        let mut byte: [u8; 1] = [0; 1];
+        self.read_bytes(reg, &mut byte)?;
+        Ok(bits::get_bits(byte[0], start_bit, length))
     }
 
     /// Reads byte from register
