@@ -151,7 +151,7 @@ where
     /// sources:
     /// * https://github.com/kriswiner/MPU6050/blob/a7e0c8ba61a56c5326b2bcd64bc81ab72ee4616b/MPU6050IMU.ino#L486
     /// * https://arduino.stackexchange.com/a/48430
-    pub fn setup_motion_detection<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+    pub fn setup_motion_detection(&mut self) -> Result<(), Mpu6050Error<E>> {
         self.write_byte(0x6B, 0x00)?;
         // optional? self.write_byte(0x68, 0x07)?; // Reset all internal signal paths in the MPU-6050 by writing 0x07 to register 0x68;
         self.write_byte(INT_PIN_CFG::ADDR, 0x20)?; //write register 0x37 to select how to use the interrupt pin. For an active high, push-pull signal that stays until register (decimal) 58 is read, write 0x20.
@@ -356,7 +356,7 @@ where
 
     /// Writes byte to register
     pub fn write_byte(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write(SLAVE_ADDR.addr(), &[reg, byte])
+        self.i2c.write(SLAVE_ADDR, &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
         // delay disabled for dev build
         // TODO: check effects with physical unit
@@ -397,14 +397,14 @@ where
     /// Reads byte from register
     pub fn read_byte(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
-        self.i2c.write_read(SLAVE_ADDR.addr(), &[reg], &mut byte)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], &mut byte)
             .map_err(Mpu6050Error::I2c)?;
         Ok(byte[0])
     }
 
     /// Reads series of bytes into buf from specified reg
     pub fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write_read(SLAVE_ADDR.addr(), &[reg], buf)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], buf)
             .map_err(Mpu6050Error::I2c)?;
         Ok(())
     }

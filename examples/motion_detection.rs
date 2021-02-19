@@ -12,7 +12,7 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     let mut mpu = Mpu6050::new(i2c);
     
     mpu.init(&mut delay)?;
-    mpu.setup_motion_detection(&mut delay)?;
+    mpu.setup_motion_detection()?;
 
     let mut count: u8 = 0;
 
