@@ -140,11 +140,32 @@ where
 
     /// Verifies device to address 0x68 with WHOAMI.addr() Register
     fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
-        let address = self.read_byte(WHOAMI.addr())?;
-        if address != SLAVE_ADDR.addr() {
+        let address = self.read_byte(WHOAMI)?;
+        if address != SLAVE_ADDR {
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
+    }
+
+    /// setup motion detection
+    /// sources:
+    /// * https://github.com/kriswiner/MPU6050/blob/a7e0c8ba61a56c5326b2bcd64bc81ab72ee4616b/MPU6050IMU.ino#L486
+    /// * https://arduino.stackexchange.com/a/48430
+    pub fn setup_motion_detection<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+        self.write_byte(0x6B, 0x00)?;
+        // optional? self.write_byte(0x68, 0x07)?; // Reset all internal signal paths in the MPU-6050 by writing 0x07 to register 0x68;
+        self.write_byte(INT_PIN_CFG::ADDR, 0x20)?; //write register 0x37 to select how to use the interrupt pin. For an active high, push-pull signal that stays until register (decimal) 58 is read, write 0x20.
+        self.write_byte(ACCEL_CONFIG::ADDR, 0x01)?; //Write register 28 (==0x1C) to set the Digital High Pass Filter, bits 3:0. For example set it to 0x01 for 5Hz. (These 3 bits are grey in the data sheet, but they are used! Leaving them 0 means the filter always outputs 0.)
+        self.write_byte(MOT_THR, 10)?; //Write the desired Motion threshold to register 0x1F (For example, write decimal 20).
+        self.write_byte(MOT_DUR, 40)?; //Set motion detect duration to 1  ms; LSB is 1 ms @ 1 kHz rate
+        self.write_byte(0x69, 0x15)?; //to register 0x69, write the motion detection decrement and a few other settings (for example write 0x15 to set both free-fall and motion decrements to 1 and accelerometer start-up delay to 5ms total by adding 1ms. )
+        self.write_byte(INT_ENABLE::ADDR, 0x40)?; //write register 0x38, bit 6 (0x40), to enable motion detection interrupt.
+        Ok(())
+    }
+
+    /// get whether or not motion has been detected (INT_STATUS, MOT_INT)
+    pub fn get_motion_detected(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(INT_STATUS::ADDR, INT_STATUS::MOT_INT)? != 0)
     }
 
     /// set accel high pass filter mode
