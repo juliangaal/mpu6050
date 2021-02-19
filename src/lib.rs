@@ -203,13 +203,17 @@ where
     }
 
     /// enable, disable temperature measurement of sensor
+    /// TEMP_DIS actually saves "disabled status"
+    /// 1 is disabled! -> enable=true : bit=!enable
     pub fn set_temp_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
-        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS, enable)?)
+        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS, !enable)?)
     }
 
     /// get temperature sensor status
+    /// TEMP_DIS actually saves "disabled status"
+    /// 1 is disabled! -> 1 == 0 : false, 0 == 0 : true
     pub fn get_temp_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
-        Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS)? != 0)
+        Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS)? == 0)
     }
 
     /// set accel x self test

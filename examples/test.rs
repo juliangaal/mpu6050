@@ -47,8 +47,10 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     println!("Test temp enable/disable");
     mpu.set_temp_enabled(false)?;
     assert_eq!(mpu.get_temp_enabled()?, false);
+    assert_eq!(mpu.get_temp()?, 36.53);
     mpu.set_temp_enabled(true)?;
     assert_eq!(mpu.get_temp_enabled()?, true);
+    assert_ne!(mpu.get_temp()?, 36.53);
 
     // reset
     println!("Test reset");
@@ -57,7 +59,7 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     assert_eq!(mpu.get_accel_range()?, range::AccelRange::G2);
     assert_eq!(mpu.get_gyro_range()?, range::GyroRange::D250);
     assert_eq!(mpu.get_sleep_enabled()?, true);
-    assert_eq!(mpu.get_temp_enabled()?, false);
+    assert_eq!(mpu.get_temp_enabled()?, true);
 
     println!("Test successful");
     Ok(())
