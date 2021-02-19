@@ -86,27 +86,27 @@
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5A] EXT_SENS_DATA_17|	RO	|[7:0] EXT_SENS_DATA_17|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5B] EXT_SENS_DATA_18|	RO	|[7:0] EXT_SENS_DATA_18|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5C] EXT_SENS_DATA_19|	RO	|[7:0] EXT_SENS_DATA_19|
-| <ul><li> -[ ] </li></ul>||[0x5D] EXT_SENS_DATA_20|	RO	|[7:0] EXT_SENS_DATA_20|
-| <ul><li> -[ ] </li></ul>||[0x5E] EXT_SENS_DATA_21|	RO	|[7:0] EXT_SENS_DATA_21|
-| <ul><li> -[ ] </li></ul>||[0x5F] EXT_SENS_DATA_22|	RO	|[7:0] EXT_SENS_DATA_22|
-| <ul><li> -[ ] </li></ul>||[0x60] EXT_SENS_DATA_23|	RO	|[7:0] EXT_SENS_DATA_23|
-| <ul><li> -[ ] </li></ul>||[0x61] MOT_DETECT_STATUS|	RO	|[7] MOT_XNEG	[6] MOT_XPOS	[5] MOT_YNEG	[4] MOT_YPOS	[3] MOT_ZNEG	[2] MOT_ZPOS	 	[0] MOT_ZRMOT|
-| <ul><li> -[ ] </li></ul>||[0x63] I2C_SLV0_DO|	R/W |	[7:0] I2C_SLV0_DO|
-| <ul><li> -[ ] </li></ul>||[0x64] I2C_SLV1_DO|	R/W |	[7:0] I2C_SLV1_DO|
-| <ul><li> -[ ] </li></ul>||[0x65] I2C_SLV2_DO|	R/W |	[7:0] I2C_SLV2_DO|
-| <ul><li> -[ ] </li></ul>||[0x66] I2C_SLV3_DO|	R/W |	[7:0] I2C_SLV3_DO|
-| <ul><li> -[ ] </li></ul>||[0x67] I2C_MST_DELAY_CTRL|	R/W |	[7] DELAY_ES_SHADOW	 	[4] I2C_SLV4_DLY_EN	[3] I2C_SLV3_DLY_EN	[2] I2C_SLV2_DLY_EN	[1] I2C_SLV1_DLY_EN	[0] I2C_SLV0_DLY_EN|
-| <ul><li> -[ ] </li></ul>||[0x68] SIGNAL_PATH_RESET|	R/W |	 	[2] GYRO_RESET	[1] ACCEL_RESET	[0] TEMP_RESET|
-| <ul><li> -[ ] </li></ul>||[0x69] MOT_DETECT_CTRL|	R/W |	 	[5:4] ACCEL_ON_DELAY	[3:2] FF_COUNT	[1:0] MOT_COUNT|
-| <ul><li> -[ ] </li></ul>||[0x6A] USER_CTRL|	R/W |	[7] DMP_EN	[6] FIFO_EN	[5] I2C_MST_EN	[4] I2C_IF_DIS	[3] DMP_RESET	[2] FIFO_RESET	[1] I2C_MST_RESET	[0] SIG_COND_RESET|
-| <ul><li> -[ ] </li></ul>||[0x6B] PWR_MGMT_1|	R/W |	[7] DEVICE_RESET	[6] SLEEP	[5] CYCLE	 	[3] TEMP_DIS	[2:0] CLK_SEL|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5D] EXT_SENS_DATA_20|	RO	|[7:0] EXT_SENS_DATA_20|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5E] EXT_SENS_DATA_21|	RO	|[7:0] EXT_SENS_DATA_21|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5F] EXT_SENS_DATA_22|	RO	|[7:0] EXT_SENS_DATA_22|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x60] EXT_SENS_DATA_23|	RO	|[7:0] EXT_SENS_DATA_23|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x61] MOT_DETECT_STATUS|	RO	|[7] MOT_XNEG	[6] MOT_XPOS	[5] MOT_YNEG	[4] MOT_YPOS	[3] MOT_ZNEG	[2] MOT_ZPOS	 	[0] MOT_ZRMOT|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x63] I2C_SLV0_DO|	R/W |	[7:0] I2C_SLV0_DO|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x64] I2C_SLV1_DO|	R/W |	[7:0] I2C_SLV1_DO|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x65] I2C_SLV2_DO|	R/W |	[7:0] I2C_SLV2_DO|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x66] I2C_SLV3_DO|	R/W |	[7:0] I2C_SLV3_DO|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x67] I2C_MST_DELAY_CTRL|	R/W |	[7] DELAY_ES_SHADOW	 	[4] I2C_SLV4_DLY_EN	[3] I2C_SLV3_DLY_EN	[2] I2C_SLV2_DLY_EN	[1] I2C_SLV1_DLY_EN	[0] I2C_SLV0_DLY_EN|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x68] SIGNAL_PATH_RESET|	R/W |	 	[2] GYRO_RESET	[1] ACCEL_RESET	[0] TEMP_RESET|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x69] MOT_DETECT_CTRL|	R/W |	 	[5:4] ACCEL_ON_DELAY	[3:2] FF_COUNT	[1:0] MOT_COUNT|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6A] USER_CTRL|	R/W |	[7] DMP_EN	[6] FIFO_EN	[5] I2C_MST_EN	[4] I2C_IF_DIS	[3] DMP_RESET	[2] FIFO_RESET	[1] I2C_MST_RESET	[0] SIG_COND_RESET|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x6B] PWR_MGMT_1|	R/W |	[7] DEVICE_RESET	[6] SLEEP	[5] CYCLE	 	[3] TEMP_DIS	[2:0] CLK_SEL|
 | <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6C] PWR_MGMT_2|	R/W |	[7] LP_WAKE_CTRL	 	[5] STBY_ZG	[4] STBY_YA	[3] STBY_ZA	[2] STBY_XG	[1] STBY_YG	[0] STBY_ZG|
-| <ul><li> -[ ] </li></ul>||[0x6D] BANK_SEL|	R/W |	 	[6] PRFTCH_EN	[5] CFG_USER_BANK	[4:0] MEM_SEL|
-| <ul><li> -[ ] </li></ul>||[0x6E] MEM_START_ADDR|	R/W |	[7:0] START_ADDR|
-| <ul><li> -[ ] </li></ul>||[0x6F] MEM_R_W|	R/W |	[7:0] MEM_R_W|
-| <ul><li> -[ ] </li></ul>||[0x70] DMP_CFG_1|	R/W |	 |
-| <ul><li> -[ ] </li></ul>||[0x71] DMP_CFG_2|	R/W |	 |
-| <ul><li> -[ ] </li></ul>||[0x72] FIFO_COUNTH|	R/W |	[15:0] FIFO_COUNT|
-| <ul><li> -[ ] </li></ul>||[0x73] FIFO_COUNTL|	R/W ||
-| <ul><li> -[ ] </li></ul>||[0x74] FIFO_R_W|	R/W |	[7:0] FIFO_R_W|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6D] BANK_SEL|	R/W |	 	[6] PRFTCH_EN	[5] CFG_USER_BANK	[4:0] MEM_SEL|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6E] MEM_START_ADDR|	R/W |	[7:0] START_ADDR|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6F] MEM_R_W|	R/W |	[7:0] MEM_R_W|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x70] DMP_CFG_1|	R/W |	 |
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x71] DMP_CFG_2|	R/W |	 |
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x72] FIFO_COUNTH|	R/W |	[15:0] FIFO_COUNT|
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x73] FIFO_COUNTL|	R/W ||
+| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x74] FIFO_R_W|	R/W |	[7:0] FIFO_R_W|
 | <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x75] WHO_AM_I|	RO	| 	[6:1] WHO_AM_I	| 

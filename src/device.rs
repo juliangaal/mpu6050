@@ -64,19 +64,14 @@ pub enum Registers {
     ACC_REGZ_H = 0x3f,
     /// High Byte Register Temperature
     TEMP_OUT_H = 0x41,
-    /// Register to control chip waking from sleep, enabling sensors, default: sleep
-    POWER_MGMT_1 = 0x6b, 
     /// Internal clock
-    POWER_MGMT_2 = 0x6c, 
-    /// Accelerometer config register
-    ACCEL_CONFIG  = 0x1c,
-    /// gyro config register
-    GYRO_CONFIG = 0x1b,
+    POWER_MGMT_2 = 0x6c,
 }
 
+/// Describes a bit block from bit number 'bit' to 'bit'+'length'
 pub struct BitBlock {
-    start_bit: u8,
-    length: u8
+    pub bit: u8,
+    pub length: u8
 }
 
 impl Registers {
@@ -87,56 +82,64 @@ impl Registers {
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-/// Register 107: Power Management
-pub struct PWR_MGMT_1;
+/// Register 27: Gyro Config
+pub struct GYRO_CONFIG;
 
-impl PWR_MGMT_1 {
-    pub const ADDR: u8 = 0x6b;
-    pub const DEVICE_RESET: u8 = 7;
-    pub const SLEEP: u8 = 6;
-    pub const CYCLE: u8 = 5;
-    pub const TEMP_DIS: u8 = 3;
-    pub const CLKSEL: BitBlock = BitBlock { start_bit: 2, length: 3 };
+impl GYRO_CONFIG {
+    pub const ADDR: u8 = 0x1b;
+    /// Gyro x axis self test bit
+    pub const XG_ST: u8 = 7;
+    /// Gyro y axis self test bit
+    pub const YG_ST: u8 = 6;
+    /// Gyro z axis self test bit
+    pub const ZG_ST: u8 = 5;
+    /// Gyro Config FS_SEL
+    pub const FS_SEL: BitBlock = BitBlock { bit: 4, length: 2 };
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
-pub struct Bits;
+/// Register 28: Accel Config
+pub struct ACCEL_CONFIG;
 
-
-impl Bits {
-    /// Accelerometer high pass filter bit: See 4.5 Register 28
-    pub const ACCEL_HPF_BIT: u8 = 3;
-
-    /// Gyro x axis self test bit
-    pub const GYRO_CONFIG_XG_ST: u8 = 7;
-    /// Gyro y axis self test bit
-    pub const GYRO_CONFIG_YG_ST: u8 = 6;
-    /// Gyro z axis self test bit
-    pub const GYRO_CONFIG_ZG_ST: u8 = 5;
-    /// Gyro Config FS_SEL start bit
-    pub const GYRO_CONFIG_FS_SEL_BIT: u8 = 4;
-    /// Gyro Config FS_SEL length
-    pub const GYRO_CONFIG_FS_SEL_LENGTH: u8 = 3;
-
+impl ACCEL_CONFIG {
+    /// Base Address
+    pub const ADDR: u8 = 0x1c;
     /// Accel x axis self test bit
-    pub const ACCEL_CONFIG_XA_ST: u8 = 7;
+    pub const XA_ST: u8 = 7;
     /// Accel y axis self test bit
-    pub const ACCEL_CONFIG_YA_ST: u8 = 6;
+    pub const YA_ST: u8 = 6;
     /// Accel z axis self test bit
-    pub const ACCEL_CONFIG_ZA_ST: u8 = 5;
-    /// Accel Config FS_SEL start bit
-    pub const ACCEL_CONFIG_FS_SEL_BIT: u8 = 4;
-    /// Accel Config FS_SEL length
-    pub const ACCEL_CONFIG_FS_SEL_LENGTH: u8 = 2;
-    /// Accel Config FS_SEL start bit
-    pub const ACCEL_CONFIG_ACCEL_HPF_BIT: u8 = 2;
-    /// Accel Config FS_SEL length
-    pub const ACCEL_CONFIG_ACCEL_HPF_LENGTH: u8 = 3;
+    pub const ZA_ST: u8 = 5;
+    /// Accel Config FS_SEL
+    pub const FS_SEL: BitBlock = BitBlock { bit: 4, length: 2};
+    /// Accel Config ACCEL_HPF
+    pub const ACCEL_HPF: BitBlock = BitBlock { bit: 2, length: 3};
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
+/// Register 107: Power Management
+pub struct PWR_MGMT_1;
+
+impl PWR_MGMT_1 {
+    /// Base Address
+    pub const ADDR: u8 = 0x6b;
+    /// Device Reset bit
+    pub const DEVICE_RESET: u8 = 7;
+    /// Sleep mode bit (Should be called "Low Power", doesn't actually sleep)
+    pub const SLEEP: u8 = 6;
+    /// Cycle bit for wake operations
+    pub const CYCLE: u8 = 5;
+    /// Temperature sensor enable/disable bit
+    pub const TEMP_DIS: u8 = 3;
+    /// Clock Control
+    pub const CLKSEL: BitBlock = BitBlock { bit: 2, length: 3 };
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// Accelerometer High Pass Filter Values
 pub enum ACCEL_HPF {
     _RESET = 0,
     _5 = 1,
@@ -160,12 +163,33 @@ impl From<u8> for ACCEL_HPF {
         }
     }
 }
-//
-// #[derive(Copy, Clone, Debug)]
-// pub struct BitBlock {
-//     reg: u8,
-//     start_bit: u8,
-//     length: u8
-// }
-//
-// pub const ACONFIG_ACCEL_HBF: BitBlock = BitBlock { reg: Registers::ACCEL_CONFIG.addr(), start_bit: Bits::ACCEL_CONFIG_ACCEL_HBF_BIT, length: Bits::ACCEL_CONFIG_ACCEL_HBF_LENGTH};
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// Clock Source Select Values
+pub enum CLKSEL {
+    OSCILL = 0,
+    GXAXIS = 1,
+    GYAXIS = 2,
+    GZAXIS = 3,
+    EXT_32p7 = 4,
+    EXT_19P2 = 5,
+    RESERV = 6,
+    STOP = 7,
+}
+
+impl From<u8> for CLKSEL {
+    fn from(clk: u8) -> Self {
+        match clk {
+            0 => CLKSEL::OSCILL,
+            1 => CLKSEL::GXAXIS,
+            2 => CLKSEL::GYAXIS,
+            3 => CLKSEL::GZAXIS,
+            4 => CLKSEL::EXT_32p7,
+            5 => CLKSEL::EXT_19P2,
+            6 => CLKSEL::RESERV,
+            7 => CLKSEL::STOP,
+            _ => CLKSEL::GXAXIS
+        }
+    }
+}

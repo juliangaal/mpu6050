@@ -46,7 +46,7 @@ pub mod bits;
 pub mod range;
 
 use crate::range::*;
-use crate::device::{*, Registers::*, Bits};
+use crate::device::{*, Registers::*};
 
 use libm::{powf, atan2f, sqrtf};
 use nalgebra::{Vector3, Vector2};
@@ -102,9 +102,30 @@ where
 
     /// Wakes MPU6050 with all sensors enabled (default)
     fn wake<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
-        self.write_byte(POWER_MGMT_1.addr(), 0)?;
+        // MPU6050 has sleep enabled by default -> set bit 0 to wake
+        // Set clock source to be PLL with x-axis gyroscope reference, bits 2:0 = 001 (See Register Map )
+        self.write_byte(PWR_MGMT_1::ADDR, 0x01)?;
         delay.delay_ms(100u8);
         Ok(())
+    }
+
+    /// From Register map:
+    /// "An  internal  8MHz  oscillator,  gyroscope based  clock,or  external  sources  can  be
+    /// selected  as the MPU-60X0 clock source.
+    /// When the internal 8 MHz oscillator or an external source is chosen as the clock source,
+    /// the MPU-60X0 can operate in low power modes with the gyroscopes disabled. Upon power up,
+    /// the MPU-60X0clock source defaults to the internal oscillator. However, it is highly
+    /// recommended  that  the  device beconfigured  to  use  one  of  the  gyroscopes
+    /// (or  an  external  clocksource) as the clock reference for improved stability.
+    /// The clock source can be selected according to the following table...."
+    pub fn set_clock_source(&mut self, source: CLKSEL) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bits(PWR_MGMT_1::ADDR, PWR_MGMT_1::CLKSEL.bit, PWR_MGMT_1::CLKSEL.length, source as u8)?)
+    }
+
+    /// get current clock source
+    pub fn get_clock_source(&mut self) -> Result<CLKSEL, Mpu6050Error<E>> {
+        let source = self.read_bits(PWR_MGMT_1::ADDR, PWR_MGMT_1::CLKSEL.bit, PWR_MGMT_1::CLKSEL.length)?;
+        Ok(CLKSEL::from(source))
     }
 
     /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
@@ -129,26 +150,27 @@ where
     /// set accel high pass filter mode
     pub fn set_accel_hpf(&mut self, mode: ACCEL_HPF) -> Result<(), Mpu6050Error<E>> {
         Ok(
-            self.write_bits(ACCEL_CONFIG.addr(),
-                        Bits::ACCEL_CONFIG_ACCEL_HPF_BIT,
-                        Bits::ACCEL_CONFIG_ACCEL_HPF_LENGTH, mode as u8)?
+            self.write_bits(ACCEL_CONFIG::ADDR,
+                            ACCEL_CONFIG::ACCEL_HPF.bit,
+                            ACCEL_CONFIG::ACCEL_HPF.length,
+                            mode as u8)?
         )
     }
 
     /// get accel high pass filter mode
     pub fn get_accel_hpf(&mut self) -> Result<ACCEL_HPF, Mpu6050Error<E>> {
-        let mode: u8 = self.read_bits(ACCEL_CONFIG.addr(),
-                                      Bits::ACCEL_CONFIG_ACCEL_HPF_BIT,
-                                      Bits::ACCEL_CONFIG_ACCEL_HPF_LENGTH)?;
+        let mode: u8 = self.read_bits(ACCEL_CONFIG::ADDR,
+                                      ACCEL_CONFIG::ACCEL_HPF.bit,
+                                      ACCEL_CONFIG::ACCEL_HPF.length)?;
 
         Ok(ACCEL_HPF::from(mode))
     }
 
     /// Set gyro range, and update sensitivity accordingly
     pub fn set_gyro_range(&mut self, range: GyroRange) -> Result<(), Mpu6050Error<E>> {
-        self.write_bits(GYRO_CONFIG.addr(),
-                        Bits::GYRO_CONFIG_FS_SEL_BIT,
-                        Bits::GYRO_CONFIG_FS_SEL_LENGTH,
+        self.write_bits(GYRO_CONFIG::ADDR,
+                        GYRO_CONFIG::FS_SEL.bit,
+                        GYRO_CONFIG::FS_SEL.length,
                         range as u8)?;
 
         self.gyro_sensitivity = range.sensitivity();
@@ -157,9 +179,9 @@ where
 
     /// set accel range, and update sensitivy accordingly
     pub fn set_accel_range(&mut self, range: AccelRange) -> Result<(), Mpu6050Error<E>> {
-        self.write_bits(ACCEL_CONFIG.addr(),
-                        Bits::ACCEL_CONFIG_FS_SEL_BIT,
-                        Bits::ACCEL_CONFIG_FS_SEL_LENGTH,
+        self.write_bits(ACCEL_CONFIG::ADDR,
+                        ACCEL_CONFIG::FS_SEL.bit,
+                        ACCEL_CONFIG::FS_SEL.length,
                         range as u8)?;
 
         self.acc_sensitivity = range.sensitivity();
@@ -168,18 +190,18 @@ where
 
     /// get current accel_range
     pub fn get_accel_range(&mut self) -> Result<AccelRange, Mpu6050Error<E>> {
-        let byte = self.read_bits(ACCEL_CONFIG.addr(),
-                       Bits::ACCEL_CONFIG_FS_SEL_BIT,
-                       Bits::ACCEL_CONFIG_FS_SEL_LENGTH)?;
+        let byte = self.read_bits(ACCEL_CONFIG::ADDR,
+                                  ACCEL_CONFIG::FS_SEL.bit,
+                                  ACCEL_CONFIG::FS_SEL.length)?;
 
         Ok(AccelRange::from(byte))
     }
 
     /// get current gyro range
     pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
-        let byte = self.read_bits(GYRO_CONFIG.addr(),
-                                  Bits::GYRO_CONFIG_FS_SEL_BIT,
-                                  Bits::GYRO_CONFIG_FS_SEL_LENGTH)?;
+        let byte = self.read_bits(GYRO_CONFIG::ADDR,
+                                  GYRO_CONFIG::FS_SEL.bit,
+                                  GYRO_CONFIG::FS_SEL.length)?;
 
         Ok(GyroRange::from(byte))
     }
@@ -218,32 +240,32 @@ where
 
     /// set accel x self test
     pub fn set_accel_x_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
-        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_XA_ST, enable)?)
+        Ok(self.write_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::XA_ST, enable)?)
     }
 
     /// get accel x self test
     pub fn get_accel_x_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
-        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_XA_ST)? != 0)
+        Ok(self.read_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::XA_ST)? != 0)
     }
 
     /// set accel y self test
     pub fn set_accel_y_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
-        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_YA_ST, enable)?)
+        Ok(self.write_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::YA_ST, enable)?)
     }
 
     /// get accel y self test
     pub fn get_accel_y_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
-        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_YA_ST)? != 0)
+        Ok(self.read_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::YA_ST)? != 0)
     }
 
     /// set accel z self test
     pub fn set_accel_z_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
-        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_ZA_ST, enable)?)
+        Ok(self.write_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::ZA_ST, enable)?)
     }
 
     /// get accel z self test
     pub fn get_accel_z_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
-        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_ZA_ST)? != 0)
+        Ok(self.read_bit(ACCEL_CONFIG::ADDR, ACCEL_CONFIG::ZA_ST)? != 0)
     }
 
     /// Roll and pitch estimation from raw accelerometer readings
