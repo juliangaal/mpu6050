@@ -4,9 +4,27 @@
 //!
 
 /// Gyro Sensitivity
+///
+/// Measurements are scaled like this:
+/// x * range/2**(resolution-1) or x / (2**(resolution-1) / range)
+/// Sources:
+///     * https://www.nxp.com/docs/en/application-note/AN3461.pdf
+///     * https://theccontinuum.com/2012/09/24/arduino-imu-pitch-roll-from-accelerometer/
+///     * https://makersportal.com/blog/2019/8/17/arduino-mpu6050-high-frequency-accelerometer-and-gyroscope-data-saver#accel_test
+///     * https://github.com/kriswiner/MPU6050/wiki/2014-Invensense-Developer%27s-Conference
+///     * rust MPU9250 driver on github
 pub const GYRO_SENS: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
 
 /// Accelerometer Sensitivity
+///
+/// Measurements are scaled like this:
+/// x * range/2**(resolution-1) or x / (2**(resolution-1) / range)
+/// Sources:
+///     * https://www.nxp.com/docs/en/application-note/AN3461.pdf
+///     * https://theccontinuum.com/2012/09/24/arduino-imu-pitch-roll-from-accelerometer/
+///     * https://makersportal.com/blog/2019/8/17/arduino-mpu6050-high-frequency-accelerometer-and-gyroscope-data-saver#accel_test
+///     * https://github.com/kriswiner/MPU6050/wiki/2014-Invensense-Developer%27s-Conference
+///     * rust MPU9250 driver on github
 pub const ACCEL_SENS: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
 
 /// Temperature Offset
@@ -14,6 +32,15 @@ pub const TEMP_OFFSET: f32 = 36.53;
 
 /// Temperature Sensitivity
 pub const TEMP_SENSITIVITY: f32 = 340.;
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
+pub struct Specs;
+
+impl Specs {
+    // pub const ACCEL_SELF_TEST_MIN: u8 = -14;
+    pub const ACCEL_SELF_TEST_MAX: u8 = 14;
+}
 
 #[allow(non_camel_case_types)]
 #[derive(Copy, Clone, Debug)]
@@ -47,10 +74,29 @@ pub enum Registers {
     GYRO_CONFIG = 0x1b,
 }
 
+pub struct BitBlock {
+    start_bit: u8,
+    length: u8
+}
+
 impl Registers {
     pub fn addr(&self) -> u8 {
         *self as u8
     }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
+/// Register 107: Power Management
+pub struct PWR_MGMT_1;
+
+impl PWR_MGMT_1 {
+    pub const ADDR: u8 = 0x6b;
+    pub const DEVICE_RESET: u8 = 7;
+    pub const SLEEP: u8 = 6;
+    pub const CYCLE: u8 = 5;
+    pub const TEMP_DIS: u8 = 3;
+    pub const CLKSEL: BitBlock = BitBlock { start_bit: 2, length: 3 };
 }
 
 #[allow(non_camel_case_types)]
@@ -62,12 +108,23 @@ impl Bits {
     /// Accelerometer high pass filter bit: See 4.5 Register 28
     pub const ACCEL_HPF_BIT: u8 = 3;
 
+    /// Gyro x axis self test bit
+    pub const GYRO_CONFIG_XG_ST: u8 = 7;
+    /// Gyro y axis self test bit
+    pub const GYRO_CONFIG_YG_ST: u8 = 6;
+    /// Gyro z axis self test bit
+    pub const GYRO_CONFIG_ZG_ST: u8 = 5;
     /// Gyro Config FS_SEL start bit
     pub const GYRO_CONFIG_FS_SEL_BIT: u8 = 4;
     /// Gyro Config FS_SEL length
     pub const GYRO_CONFIG_FS_SEL_LENGTH: u8 = 3;
 
-
+    /// Accel x axis self test bit
+    pub const ACCEL_CONFIG_XA_ST: u8 = 7;
+    /// Accel y axis self test bit
+    pub const ACCEL_CONFIG_YA_ST: u8 = 6;
+    /// Accel z axis self test bit
+    pub const ACCEL_CONFIG_ZA_ST: u8 = 5;
     /// Accel Config FS_SEL start bit
     pub const ACCEL_CONFIG_FS_SEL_BIT: u8 = 4;
     /// Accel Config FS_SEL length

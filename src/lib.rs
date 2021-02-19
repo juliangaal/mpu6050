@@ -184,8 +184,67 @@ where
         Ok(GyroRange::from(byte))
     }
 
+    /// reset device
+    pub fn reset_device<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+        self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::DEVICE_RESET, true)?;
+        delay.delay_ms(100u8);
+        // Note: Reset sets sleep to true! Section register map: resets PWR_MGMT to 0x40
+        Ok(())
+    }
+
+    /// enable, disable sleep of sensor
+    pub fn set_sleep_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::SLEEP, enable)?)
+    }
+
+    /// get sleep status
+    pub fn get_sleep_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::SLEEP)? != 0)
+    }
+
+    /// enable, disable temperature measurement of sensor
+    pub fn set_temp_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS, enable)?)
+    }
+
+    /// get temperature sensor status
+    pub fn get_temp_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::TEMP_DIS)? != 0)
+    }
+
+    /// set accel x self test
+    pub fn set_accel_x_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_XA_ST, enable)?)
+    }
+
+    /// get accel x self test
+    pub fn get_accel_x_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_XA_ST)? != 0)
+    }
+
+    /// set accel y self test
+    pub fn set_accel_y_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_YA_ST, enable)?)
+    }
+
+    /// get accel y self test
+    pub fn get_accel_y_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_YA_ST)? != 0)
+    }
+
+    /// set accel z self test
+    pub fn set_accel_z_self_test(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_ZA_ST, enable)?)
+    }
+
+    /// get accel z self test
+    pub fn get_accel_z_self_test(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(ACCEL_CONFIG.addr(), Bits::ACCEL_CONFIG_ZA_ST)? != 0)
+    }
+
     /// Roll and pitch estimation from raw accelerometer readings
     /// NOTE: no yaw! no magnetometer present on MPU6050
+    /// https://www.nxp.com/docs/en/application-note/AN3461.pdf equation 28, 29
     pub fn get_acc_angles(&mut self) -> Result<Vector2<f32>, Mpu6050Error<E>> {
         let acc = self.get_acc()?;
 
@@ -221,7 +280,7 @@ where
         ))
     }
 
-    /// Accelerometer readings in m/s^2
+    /// Accelerometer readings in g
     pub fn get_acc(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut acc = self.read_rot(ACC_REGX_H.addr())?;
         acc /= self.acc_sensitivity;

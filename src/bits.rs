@@ -74,6 +74,14 @@ mod tests {
         assert_eq!(get_bit(4, 2), 1);
         assert_eq!(get_bit(4, 1), 0);
         assert_eq!(get_bit(4, 0), 0);
+        assert_eq!(get_bit(12, 3), 1);
+        assert_eq!(get_bit(12, 2), 1);
+        assert_eq!(get_bit(12, 1), 0);
+        assert_eq!(get_bit(12, 1), 0);
+        assert_eq!(get_bit(8, 3), 1);
+        assert_eq!(get_bit(8, 2), 0);
+        assert_eq!(get_bit(8, 1), 0);
+        assert_eq!(get_bit(8, 0), 0);
     }
 
     #[test]
@@ -91,6 +99,13 @@ mod tests {
         // enable bit 3
         set_bit(&mut byte[0], 3, true);
         assert_eq!(byte[0], 12);
+
+        byte = ((1 << 7) as u8).to_be_bytes();
+        set_bit(&mut byte[0], 7, false);
+        assert_eq!(byte[0], 0);
+
+        set_bit(&mut byte[0], 7, true);
+        assert_eq!(byte[0], (1 << 7) as u8);
     }
 
     #[test]
