@@ -1,13 +1,18 @@
-//! All constants used in the driver, mostly register addresses
-//! Register map: https://arduino.ua/docs/RM-MPU-6000A.pdf
-//! Datasheet with WAY more info about interrupts (Revision 3.2) https://www.cdiweb.com/datasheets/invensense/ps-mpu-6000a.pdf
+//! All device constants used in the driver, mostly register addresses.
 //!
+//! NOTE: Earlier revisions of Datasheet and Register Map has way more info about interrupt usage,
+//! particularly rev 3.2
 //!
+//! #### Sources:
+//! * Register map (rev 3.2): https://arduino.ua/docs/RM-MPU-6000A.pdf
+//! * Datasheet (rev 3.2): https://www.cdiweb.com/datasheets/invensense/ps-mpu-6000a.pdf
+
 
 /// Gyro Sensitivity
 ///
 /// Measurements are scaled like this:
 /// x * range/2**(resolution-1) or x / (2**(resolution-1) / range)
+///
 /// Sources:
 ///     * https://www.nxp.com/docs/en/application-note/AN3461.pdf
 ///     * https://theccontinuum.com/2012/09/24/arduino-imu-pitch-roll-from-accelerometer/
@@ -19,6 +24,7 @@ pub const GYRO_SENS: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
 /// Accelerometer Sensitivity
 ///
 /// Measurements are scaled like this:
+///
 /// x * range/2**(resolution-1) or x / (2**(resolution-1) / range)
 /// Sources:
 ///     * https://www.nxp.com/docs/en/application-note/AN3461.pdf
@@ -27,62 +33,38 @@ pub const GYRO_SENS: (f32, f32, f32, f32) = (131., 65.5, 32.8, 16.4);
 ///     * https://github.com/kriswiner/MPU6050/wiki/2014-Invensense-Developer%27s-Conference
 ///     * rust MPU9250 driver on github
 pub const ACCEL_SENS: (f32, f32, f32, f32) = (16384., 8192., 4096., 2048.);
-
 /// Temperature Offset
 pub const TEMP_OFFSET: f32 = 36.53;
-
 /// Temperature Sensitivity
 pub const TEMP_SENSITIVITY: f32 = 340.;
 
-#[allow(non_camel_case_types)]
-#[derive(Copy, Clone, Debug)]
-pub struct Specs;
-
-impl Specs {
-    // pub const ACCEL_SELF_TEST_MIN: u8 = -14;
-    pub const ACCEL_SELF_TEST_MAX: u8 = 14;
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Copy, Clone, Debug)]
-/// Register addresses
-pub enum Registers {
-    /// High Byte Register Gyro x orientation
-    GYRO_REGX_H = 0x43,
-    /// High Byte Register Gyro y orientation
-    GYRO_REGY_H = 0x45,
-    /// High Byte Register Gyro z orientation
-    GYRO_REGZ_H = 0x47,
-    /// High Byte Register Calc roll
-    ACC_REGX_H = 0x3b,
-    /// High Byte Register Calc pitch
-    ACC_REGY_H = 0x3d,
-    /// High Byte Register Calc yaw
-    ACC_REGZ_H = 0x3f,
-    /// High Byte Register Temperature
-    TEMP_OUT_H = 0x41,
-    //
-}
-
-/// Slave address of Mpu6050
-pub const SLAVE_ADDR: u8 = 0x68;
-/// Internal register to check slave addr
-pub const WHOAMI: u8 = 0x75;
 /// Motion Threshold Register
 pub const MOT_THR: u8 = 0x1F;
 /// Motion Duration Detection Register
 pub const MOT_DUR: u8 = 0x20;
+/// High Byte Register Gyro x orientation
+pub const GYRO_REGX_H: u8 = 0x43;
+/// High Byte Register Gyro y orientation
+pub const GYRO_REGY_H: u8 = 0x45;
+/// High Byte Register Gyro z orientation
+pub const GYRO_REGZ_H: u8 = 0x47;
+/// High Byte Register Calc roll
+pub const ACC_REGX_H : u8= 0x3b;
+/// High Byte Register Calc pitch
+pub const ACC_REGY_H : u8= 0x3d;
+/// High Byte Register Calc yaw
+pub const ACC_REGZ_H : u8= 0x3f;
+/// High Byte Register Temperature
+pub const TEMP_OUT_H : u8= 0x41;
+/// Slave address of Mpu6050
+pub const SLAVE_ADDR: u8 = 0x68;
+/// Internal register to check slave addr
+pub const WHOAMI: u8 = 0x75;
 
 /// Describes a bit block from bit number 'bit' to 'bit'+'length'
 pub struct BitBlock {
     pub bit: u8,
     pub length: u8
-}
-
-impl Registers {
-    pub fn addr(&self) -> u8 {
-        *self as u8
-    }
 }
 
 #[allow(non_camel_case_types)]
@@ -294,9 +276,13 @@ impl PWR_MGMT_2 {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 /// Wake values
 pub enum LP_WAKE_CTRL {
+    /// 1.25 Hz
     _1P25 = 0,
+    /// 2.5 Hz
     _2P5,
+    /// 5 Hz
     _5,
+    /// 10 Hz
     _10,
 }
 
@@ -304,11 +290,18 @@ pub enum LP_WAKE_CTRL {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 /// Accelerometer High Pass Filter Values
 pub enum ACCEL_HPF {
+    /// Cut off frequency: None
     _RESET = 0,
+    /// Cut off frequency: 5 Hz
     _5 = 1,
+    /// Cut off frequency: 2.5 Hz
     _2P5 = 2,
+    /// Cut off frequency: 1.25 Hz
     _1P25 = 3,
+    /// Cut off frequency: 0.63 Hz
     _0P63 = 4,
+    /// When triggered, the filter holds the present sample. The filter output will be the
+    /// difference between the input sample and the held sample
     _HOLD = 7
 }
 
@@ -331,13 +324,21 @@ impl From<u8> for ACCEL_HPF {
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 /// Clock Source Select Values
 pub enum CLKSEL {
+    /// Internal 8MHz oscillator
     OSCILL = 0,
+    /// PLL with X axis gyroscope reference
     GXAXIS = 1,
+    /// PLL with Y axis gyroscope reference
     GYAXIS = 2,
+    /// PLL with Z axis gyroscope reference
     GZAXIS = 3,
+    /// PLL with external 32.768kHz reference
     EXT_32p7 = 4,
+    /// PLL with external 19.2MHz reference
     EXT_19P2 = 5,
+    /// Reserved
     RESERV = 6,
+    /// Stops the clock and keeps the timing generator in reset
     STOP = 7,
 }
 
@@ -353,6 +354,82 @@ impl From<u8> for CLKSEL {
             6 => CLKSEL::RESERV,
             7 => CLKSEL::STOP,
             _ => CLKSEL::GXAXIS
+        }
+    }
+}
+
+/// Defines accelerometer range/sensivity
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum AccelRange {
+    /// 2G
+    G2 = 0,
+    /// 4G
+    G4,
+    /// 8G
+    G8,
+    /// 16G
+    G16,
+}
+
+/// Defines gyro range/sensitivity
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum GyroRange {
+    /// 250 degrees
+    D250 = 0,
+    /// 500 degrees
+    D500,
+    /// 1000 degrees
+    D1000,
+    /// 2000 degrees
+    D2000,
+}
+
+impl From<u8> for GyroRange {
+    fn from(range: u8) -> Self
+    {
+        match range {
+            0 => GyroRange::D250,
+            1 => GyroRange::D500,
+            2 => GyroRange::D1000,
+            3 => GyroRange::D2000,
+            _ => GyroRange::D250
+        }
+    }
+}
+
+impl From<u8> for AccelRange {
+    fn from(range: u8) -> Self
+    {
+        match range {
+            0 => AccelRange::G2,
+            1 => AccelRange::G4,
+            2 => AccelRange::G8,
+            3 => AccelRange::G16,
+            _ => AccelRange::G2
+        }
+    }
+}
+
+impl AccelRange {
+    // Converts accelerometer range to correction/scaling factor, see register sheet
+    pub(crate) fn sensitivity(&self) -> f32 {
+        match &self {
+            AccelRange::G2 => ACCEL_SENS.0,
+            AccelRange::G4 => ACCEL_SENS.1,
+            AccelRange::G8 => ACCEL_SENS.2,
+            AccelRange::G16 => ACCEL_SENS.3,
+        }
+    }
+}
+
+impl GyroRange {
+    // Converts gyro range to correction/scaling factor, see register sheet
+    pub(crate) fn sensitivity(&self) -> f32 {
+        match &self {
+            GyroRange::D250 => GYRO_SENS.0,
+            GyroRange::D500 => GYRO_SENS.1,
+            GyroRange::D1000 => GYRO_SENS.2,
+            GyroRange::D2000 => GYRO_SENS.3,
         }
     }
 }
