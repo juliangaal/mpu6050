@@ -1,53 +1,55 @@
-//! Mpu6050 sensor driver.
+//! # Mpu6050 sensor driver.
 //!
-//! Register sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
-//! Data sheet [here](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
+//! `embedded_hal` based driver with i2c access to MPU6050
+//!
+//! ### Misc
+//! * [Register sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
+//! * [Data sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
 //! 
 //! To use this driver you must provide a concrete `embedded_hal` implementation.
-//! This example uses `linux_embedded_hal`
+//! This example uses `linux_embedded_hal`.
+//!
+//! **More Examples** can be found [here](https://github.com/juliangaal/mpu6050/tree/master/examples).
 //! ```no_run
 //! use mpu6050::*;
-// use linux_embedded_hal::{I2cdev, Delay};
-// use i2cdev::linux::LinuxI2CError;
-//
-// fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
-//     let i2c = I2cdev::new("/dev/i2c-1")
-//         .map_err(Mpu6050Error::I2c)?;
-//
-//     let mut delay = Delay;
-//     let mut mpu = Mpu6050::new(i2c);
-//
-//     mpu.init(&mut delay)?;
-//
-//     loop {
-//         // get roll and pitch estimate
-//         let acc = mpu.get_acc_angles()?;
-//         println!("r/p: {:?}", acc);
-//
-//         // get temp
-//         let temp = mpu.get_temp()?;
-//         println!("temp: {:?}c", temp);
-//
-//         // get gyro data, scaled with sensitivity
-//         let gyro = mpu.get_gyro()?;
-//         println!("gyro: {:?}", gyro);
-//
-//         // get accelerometer data, scaled with sensitivity
-//         let acc = mpu.get_acc()?;
-//         println!("acc: {:?}", acc);
-//     }
-// }
+//! use linux_embedded_hal::{I2cdev, Delay};
+//! use i2cdev::linux::LinuxI2CError;
+//!
+//! fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
+//!     let i2c = I2cdev::new("/dev/i2c-1")
+//!         .map_err(Mpu6050Error::I2c)?;
+//!
+//!     let mut delay = Delay;
+//!     let mut mpu = Mpu6050::new(i2c);
+//!
+//!     mpu.init(&mut delay)?;
+//!
+//!     loop {
+//!         // get roll and pitch estimate
+//!         let acc = mpu.get_acc_angles()?;
+//!         println!("r/p: {:?}", acc);
+//!
+//!         // get sensor temp
+//!         let temp = mpu.get_temp()?;
+//!         printlnasd!("temp: {:?}c", temp);
+//!
+//!         // get gyro data, scaled with sensitivity
+//!         let gyro = mpu.get_gyro()?;
+//!         println!("gyro: {:?}", gyro);
+//!
+//!         // get accelerometer data, scaled with sensitivity
+//!         let acc = mpu.get_acc()?;
+//!         println!("acc: {:?}", acc);
+//!     }
+//! }
 //! ```
 
 #![no_std]
 
+mod bits;
 pub mod device;
-pub mod bits;
-pub mod range;
 
-use crate::range::*;
-use crate::device::{*, Registers::*};
-
+use crate::device::*;
 use libm::{powf, atan2f, sqrtf};
 use nalgebra::{Vector3, Vector2};
 use embedded_hal::{
@@ -198,6 +200,15 @@ where
         Ok(())
     }
 
+    /// get current gyro range
+    pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
+        let byte = self.read_bits(GYRO_CONFIG::ADDR,
+                                  GYRO_CONFIG::FS_SEL.bit,
+                                  GYRO_CONFIG::FS_SEL.length)?;
+
+        Ok(GyroRange::from(byte))
+    }
+
     /// set accel range, and update sensitivy accordingly
     pub fn set_accel_range(&mut self, range: AccelRange) -> Result<(), Mpu6050Error<E>> {
         self.write_bits(ACCEL_CONFIG::ADDR,
@@ -216,15 +227,6 @@ where
                                   ACCEL_CONFIG::FS_SEL.length)?;
 
         Ok(AccelRange::from(byte))
-    }
-
-    /// get current gyro range
-    pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
-        let byte = self.read_bits(GYRO_CONFIG::ADDR,
-                                  GYRO_CONFIG::FS_SEL.bit,
-                                  GYRO_CONFIG::FS_SEL.length)?;
-
-        Ok(GyroRange::from(byte))
     }
 
     /// reset device
@@ -329,7 +331,7 @@ where
 
     /// Accelerometer readings in g
     pub fn get_acc(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
-        let mut acc = self.read_rot(ACC_REGX_H.addr())?;
+        let mut acc = self.read_rot(ACC_REGX_H)?;
         acc /= self.acc_sensitivity;
 
         Ok(acc)
@@ -337,17 +339,17 @@ where
 
     /// Gyro readings in rad/s
     pub fn get_gyro(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
-        let mut gyro = self.read_rot(GYRO_REGX_H.addr())?;
+        let mut gyro = self.read_rot(GYRO_REGX_H)?;
 
         gyro *= PI_180 * self.gyro_sensitivity;
 
         Ok(gyro)
     }
 
-    /// Temp in degrees celcius
+    /// Sensor Temp in degrees celcius
     pub fn get_temp(&mut self) -> Result<f32, Mpu6050Error<E>> {
         let mut buf: [u8; 2] = [0; 2];
-        self.read_bytes(TEMP_OUT_H.addr(), &mut buf)?;
+        self.read_bytes(TEMP_OUT_H, &mut buf)?;
         let raw_temp = self.read_word_2c(&buf[0..2]) as f32;
 
         // According to revision 4.2

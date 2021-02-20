@@ -16,7 +16,7 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
         let acc = mpu.get_acc_angles()?;
         println!("r/p: {:?}", acc);
 
-        // get temp
+        // get sensor temp
         let temp = mpu.get_temp()?;
         println!("temp: {:?}c", temp);
 
