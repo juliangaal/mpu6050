@@ -19,7 +19,7 @@
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x17] ZG_OFFS_USRH|	R/W |	[15:0] ZG_OFFS_USR|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x18] ZG_OFFS_USRL|	R/W ||
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x19] SMPLRT_DIV|	R/W |	[7:0] SMPLRT_DIV|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x1A] CONFIG|	R/W |	 	[5:3] EXT_SYNC_SET	[2:0] DLPF_CFG|
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x1A] CONFIG|	R/W |	 	[5:3] EXT_SYNC_SET	[2:0] DLPF_CFG|
 | <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x1B] GYRO_CONFIG|	R/W |	[7] XG_ST	[6] YG_ST	[5] ZG_ST	[4:3] FS_SEL|	 
 | <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x1C] ACCEL_CONFIG|	R/W |	[7] XA_ST	[6] YA_ST	[5] ZA_ST	[4:3] AFS_SEL	[2:0] ACCEL_HPF|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x1D] FF_THR|	R/W |	[7:0] FF_THR|
@@ -48,24 +48,24 @@
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x34] I2C_SLV4_CTRL|	R/W |	[7] I2C_SLV4_EN	[6] I2C_SLV4_INT_EN	[5] I2C_SLV4_REG_DIS	[4:0] I2C_MST_DLY|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x35] I2C_SLV4_DI|	R/W |	[7:0] I2C_SLV4_DI|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x36] I2C_MST_STATUS|	RO|	[7] PASS_THROUGH	[6] I2C_SLV4_DONE	[5] I2C_LOST_ARB	[4] I2C_SLV4_NACK	[3] I2C_SLV3_NACK	[2] I2C_SLV2_NACK	[1] I2C_SLV1_NACK	[0] I2C_SLV0_NACK|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x37] INT_PIN_CFG|	R/W |	[7] INT_LEVEL	[6] INT_OPEN	[5] LATCH_INT_EN	[4] INT_RD_CLEAR	[3] FSYNC_INT_LEVEL	[2] FSYNC_INT_EN	[1] I2C_BYPASS_EN	[0] CLKOUT_EN|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x38] INT_ENABLE|	R/W |	[7] FF_EN	[6] MOT_EN	[5] ZMOT_EN	[4] FIFO_OFLOW_EN	[3] I2C_MST_INT_EN	[2] PLL_RDY_INT_EN	[1] DMP_INT_EN	[0] RAW_RDY_EN|
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x37] INT_PIN_CFG|	R/W |	[7] INT_LEVEL	[6] INT_OPEN	[5] LATCH_INT_EN	[4] INT_RD_CLEAR	[3] FSYNC_INT_LEVEL	[2] FSYNC_INT_EN	[1] I2C_BYPASS_EN	[0] CLKOUT_EN|
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x38] INT_ENABLE|	R/W |	[7] FF_EN	[6] MOT_EN	[5] ZMOT_EN	[4] FIFO_OFLOW_EN	[3] I2C_MST_INT_EN	[2] PLL_RDY_INT_EN	[1] DMP_INT_EN	[0] RAW_RDY_EN|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x39] DMP_INT_STATUS|	RO|	 	[5] DMP_INT_5	[4] DMP_INT_4	[3] DMP_INT_3	[2] DMP_INT_2	[1] DMP_INT_1	[0] DMP_INT_0|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x3A] INT_STATUS|	RO|	[7] FF_INT	[6] MOT_INT	[5] ZMOT_INT	[4] FIFO_OFLOW_INT	[3] I2C_MST_INT	[2] PLL_RDY_INT	[1] DMP_INT	[0] RAW_RDY_INT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x3B] ACCEL_XOUT_H|	RO|	[15:0] ACCEL_XOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x3C] ACCEL_XOUT_L|	RO|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x3D] ACCEL_YOUT_H|	RO|	[15:0] ACCEL_YOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x3E] ACCEL_YOUT_L|	RO|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x3F] ACCEL_ZOUT_H|	RO|	[15:0] ACCEL_ZOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x40] ACCEL_ZOUT_L|	RO||
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x41] TEMP_OUT_H|	RO|	[15:0] TEMP_OUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x42] TEMP_OUT_L|	RO||
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x43] GYRO_XOUT_H|	RO | [15:0] GYRO_XOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x44] GYRO_XOUT_L|	RO||
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x45] GYRO_YOUT_H|	RO|	[15:0] GYRO_YOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x46] GYRO_YOUT_L|	RO||
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x47] GYRO_ZOUT_H|	RO|	[15:0] GYRO_ZOUT|
-| <ul><li> -[x] </li><li> -[x] </li></ul>|[0x48] GYRO_ZOUT_L|	RO||
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x3A] INT_STATUS|	RO|	[7] FF_INT	[6] MOT_INT	[5] ZMOT_INT	[4] FIFO_OFLOW_INT	[3] I2C_MST_INT	[2] PLL_RDY_INT	[1] DMP_INT	[0] RAW_RDY_INT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x3B] ACCEL_XOUT_H|	RO|	[15:0] ACCEL_XOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x3C] ACCEL_XOUT_L|	RO|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x3D] ACCEL_YOUT_H|	RO|	[15:0] ACCEL_YOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x3E] ACCEL_YOUT_L|	RO|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x3F] ACCEL_ZOUT_H|	RO|	[15:0] ACCEL_ZOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x40] ACCEL_ZOUT_L|	RO||
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x41] TEMP_OUT_H|	RO|	[15:0] TEMP_OUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x42] TEMP_OUT_L|	RO||
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x43] GYRO_XOUT_H|	RO | [15:0] GYRO_XOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x44] GYRO_XOUT_L|	RO||
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x45] GYRO_YOUT_H|	RO|	[15:0] GYRO_YOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x46] GYRO_YOUT_L|	RO||
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x47] GYRO_ZOUT_H|	RO|	[15:0] GYRO_ZOUT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x48] GYRO_ZOUT_L|	RO||
 | <ul><li> -[ ] </ul></li>|<ul><li> -[ ] </li></ul>|[0x49] EXT_SENS_DATA_00|	RO	|[7:0] EXT_SENS_DATA_00|
 | <ul><li> -[ ] </ul></li>|<ul><li> -[ ] </li></ul>|[0x4A] EXT_SENS_DATA_01|	RO	|[7:0] EXT_SENS_DATA_01|
 | <ul><li> -[ ] </ul></li>|<ul><li> -[ ] </li></ul>|[0x4B] EXT_SENS_DATA_02|	RO	|[7:0] EXT_SENS_DATA_02|
@@ -90,14 +90,14 @@
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5E] EXT_SENS_DATA_21|	RO	|[7:0] EXT_SENS_DATA_21|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x5F] EXT_SENS_DATA_22|	RO	|[7:0] EXT_SENS_DATA_22|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x60] EXT_SENS_DATA_23|	RO	|[7:0] EXT_SENS_DATA_23|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x61] MOT_DETECT_STATUS|	RO	|[7] MOT_XNEG	[6] MOT_XPOS	[5] MOT_YNEG	[4] MOT_YPOS	[3] MOT_ZNEG	[2] MOT_ZPOS	 	[0] MOT_ZRMOT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x61] MOT_DETECT_STATUS|	RO	|[7] MOT_XNEG	[6] MOT_XPOS	[5] MOT_YNEG	[4] MOT_YPOS	[3] MOT_ZNEG	[2] MOT_ZPOS	 	[0] MOT_ZRMOT|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x63] I2C_SLV0_DO|	R/W |	[7:0] I2C_SLV0_DO|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x64] I2C_SLV1_DO|	R/W |	[7:0] I2C_SLV1_DO|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x65] I2C_SLV2_DO|	R/W |	[7:0] I2C_SLV2_DO|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x66] I2C_SLV3_DO|	R/W |	[7:0] I2C_SLV3_DO|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x67] I2C_MST_DELAY_CTRL|	R/W |	[7] DELAY_ES_SHADOW	 	[4] I2C_SLV4_DLY_EN	[3] I2C_SLV3_DLY_EN	[2] I2C_SLV2_DLY_EN	[1] I2C_SLV1_DLY_EN	[0] I2C_SLV0_DLY_EN|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x68] SIGNAL_PATH_RESET|	R/W |	 	[2] GYRO_RESET	[1] ACCEL_RESET	[0] TEMP_RESET|
-| <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x69] MOT_DETECT_CTRL|	R/W |	 	[5:4] ACCEL_ON_DELAY	[3:2] FF_COUNT	[1:0] MOT_COUNT|
+| <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x69] MOT_DETECT_CTRL|	R/W |	 	[5:4] ACCEL_ON_DELAY	[3:2] FF_COUNT	[1:0] MOT_COUNT|
 | <ul><li> -[ ] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6A] USER_CTRL|	R/W |	[7] DMP_EN	[6] FIFO_EN	[5] I2C_MST_EN	[4] I2C_IF_DIS	[3] DMP_RESET	[2] FIFO_RESET	[1] I2C_MST_RESET	[0] SIG_COND_RESET|
 | <ul><li> -[x] </li></ul>|<ul><li> -[x] </li></ul>|[0x6B] PWR_MGMT_1|	R/W |	[7] DEVICE_RESET	[6] SLEEP	[5] CYCLE	 	[3] TEMP_DIS	[2:0] CLK_SEL|
 | <ul><li> -[x] </li></ul>|<ul><li> -[ ] </li></ul>|[0x6C] PWR_MGMT_2|	R/W |	[7] LP_WAKE_CTRL	 	[5] STBY_ZG	[4] STBY_YA	[3] STBY_ZA	[2] STBY_XG	[1] STBY_YG	[0] STBY_ZG|

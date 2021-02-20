@@ -1,4 +1,4 @@
-use mpu6050::*;
+use mpu6050::{*, device::*};
 
 use linux_embedded_hal::{I2cdev, Delay};
 use i2cdev::linux::LinuxI2CError;
@@ -18,15 +18,15 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
 
     // Test gyro config
     println!("Test gyro config");
-    assert_eq!(mpu.get_gyro_range()?, range::GyroRange::D250);
-    mpu.set_gyro_range(range::GyroRange::D500)?;
-    assert_eq!(mpu.get_gyro_range()?, range::GyroRange::D500);
+    assert_eq!(mpu.get_gyro_range()?, GyroRange::D250);
+    mpu.set_gyro_range(GyroRange::D500)?;
+    assert_eq!(mpu.get_gyro_range()?, GyroRange::D500);
 
     // Test accel config
     println!("Test accel config");
-    assert_eq!(mpu.get_accel_range()?, range::AccelRange::G2);
-    mpu.set_accel_range(range::AccelRange::G4)?;
-    assert_eq!(mpu.get_accel_range()?, range::AccelRange::G4);
+    assert_eq!(mpu.get_accel_range()?, AccelRange::G2);
+    mpu.set_accel_range(AccelRange::G4)?;
+    assert_eq!(mpu.get_accel_range()?, AccelRange::G4);
 
     // accel_hpf: per default RESET/no filter, see ACCEL_CONFIG
     println!("Test accel hpf");
@@ -81,8 +81,8 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     println!("Test reset");
     mpu.reset_device(&mut delay)?;
     assert_eq!(mpu.get_accel_hpf()?, ACCEL_HPF::_RESET);
-    assert_eq!(mpu.get_accel_range()?, range::AccelRange::G2);
-    assert_eq!(mpu.get_gyro_range()?, range::GyroRange::D250);
+    assert_eq!(mpu.get_accel_range()?, AccelRange::G2);
+    assert_eq!(mpu.get_gyro_range()?, GyroRange::D250);
     assert_eq!(mpu.get_sleep_enabled()?, true);
     assert_eq!(mpu.get_temp_enabled()?, true);
 
