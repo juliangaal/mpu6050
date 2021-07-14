@@ -57,7 +57,7 @@ pub const ACC_REGZ_H : u8= 0x3f;
 /// High Byte Register Temperature
 pub const TEMP_OUT_H : u8= 0x41;
 /// Slave address of Mpu6050
-pub const SLAVE_ADDR: u8 = 0x68;
+pub const DEFAULT_SLAVE_ADDR: u8 = 0x68;
 /// Internal register to check slave addr
 pub const WHOAMI: u8 = 0x75;
 
