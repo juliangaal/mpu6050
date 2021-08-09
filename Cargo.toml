@@ -16,7 +16,7 @@ libm = "0.2.1"
 
 [dependencies.nalgebra]
 default-features = false
-version = "0.24.1"
+version = "0.29.0"
 
 [dev-dependencies]
 i2cdev = "0.4.4"
