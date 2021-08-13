@@ -341,7 +341,7 @@ where
     pub fn get_gyro(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut gyro = self.read_rot(GYRO_REGX_H)?;
 
-        gyro *= PI_180 * self.gyro_sensitivity;
+        gyro *= PI_180 / self.gyro_sensitivity;
 
         Ok(gyro)
     }
