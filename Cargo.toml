@@ -19,5 +19,5 @@ default-features = false
 version = "0.24.1"
 
 [dev-dependencies]
-i2cdev = "0.4.4"
+i2cdev = "0.5.0"
 linux-embedded-hal = "0.3.0"
