@@ -76,7 +76,6 @@ pub enum Mpu6050Error<E> {
 /// Handles all operations on/with Mpu6050
 pub struct Mpu6050<I> {
     i2c: I,
-    slave_addr: u8,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
 }
@@ -89,9 +88,8 @@ where
     pub fn new(i2c: I) -> Self {
         Mpu6050 {
             i2c,
-            slave_addr: DEFAULT_SLAVE_ADDR,
             acc_sensitivity: ACCEL_SENS.0,
-            gyro_sensitivity: GYRO_SENS.0,
+            gyro_sensitivity: GYRO_SENS.0, 
         }
     }
 
@@ -99,27 +97,6 @@ where
     pub fn new_with_sens(i2c: I, arange: AccelRange, grange: GyroRange) -> Self {
         Mpu6050 {
             i2c,
-            slave_addr: DEFAULT_SLAVE_ADDR,
-            acc_sensitivity: arange.sensitivity(),
-            gyro_sensitivity: grange.sensitivity(),
-        }
-    }
-
-    /// Same as `new`, but the chip address can be specified (e.g. 0x69, if the A0 pin is pulled up)
-    pub fn new_with_addr(i2c: I, slave_addr: u8) -> Self {
-        Mpu6050 {
-            i2c,
-            slave_addr,
-            acc_sensitivity: ACCEL_SENS.0,
-            gyro_sensitivity: GYRO_SENS.0,
-        }
-    }
-
-    /// Combination of `new_with_sens` and `new_with_addr`
-    pub fn new_with_addr_and_sens(i2c: I, slave_addr: u8, arange: AccelRange, grange: GyroRange) -> Self {
-        Mpu6050 {
-            i2c,
-            slave_addr,
             acc_sensitivity: arange.sensitivity(),
             gyro_sensitivity: grange.sensitivity(),
         }
@@ -166,7 +143,7 @@ where
     /// Verifies device to address 0x68 with WHOAMI.addr() Register
     fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
         let address = self.read_byte(WHOAMI)?;
-        if address != DEFAULT_SLAVE_ADDR {
+        if address != SLAVE_ADDR {
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
@@ -381,7 +358,7 @@ where
 
     /// Writes byte to register
     pub fn write_byte(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write(self.slave_addr, &[reg, byte])
+        self.i2c.write(SLAVE_ADDR, &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
         // delay disabled for dev build
         // TODO: check effects with physical unit
@@ -422,14 +399,14 @@ where
     /// Reads byte from register
     pub fn read_byte(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
-        self.i2c.write_read(self.slave_addr, &[reg], &mut byte)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], &mut byte)
             .map_err(Mpu6050Error::I2c)?;
         Ok(byte[0])
     }
 
     /// Reads series of bytes into buf from specified reg
     pub fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write_read(self.slave_addr, &[reg], buf)
+        self.i2c.write_read(SLAVE_ADDR, &[reg], buf)
             .map_err(Mpu6050Error::I2c)?;
         Ok(())
     }
