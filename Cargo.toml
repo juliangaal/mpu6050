@@ -1,6 +1,6 @@
 [package]
 name = "mpu6050"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Julian Gaal <gjulian@uos.de>"]
 edition = "2018"
 
