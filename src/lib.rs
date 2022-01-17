@@ -79,6 +79,12 @@ pub struct Mpu6050<I> {
     slave_addr: u8,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
+    /// The offsets for the accelerometer, used for calibration. This offset is applied automatically in `fn get_acc()`, directly to the raw values.
+    /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
+    acc_offsets: Vector3<f32>,
+    /// The offsets for the gyroscope, used for calibration. This offset is applied automatically in `fn get_gyro()`, directly to the raw values.
+    /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
+    gyro_offsets: Vector3<f32>,
 }
 
 impl<I, E> Mpu6050<I>
@@ -92,6 +98,8 @@ where
             slave_addr: DEFAULT_SLAVE_ADDR,
             acc_sensitivity: ACCEL_SENS.0,
             gyro_sensitivity: GYRO_SENS.0,
+            acc_offsets: Default::default(),
+            gyro_offsets: Default::default(),
         }
     }
 
@@ -102,6 +110,8 @@ where
             slave_addr: DEFAULT_SLAVE_ADDR,
             acc_sensitivity: arange.sensitivity(),
             gyro_sensitivity: grange.sensitivity(),
+            acc_offsets: Default::default(),
+            gyro_offsets: Default::default(),
         }
     }
 
@@ -112,6 +122,8 @@ where
             slave_addr,
             acc_sensitivity: ACCEL_SENS.0,
             gyro_sensitivity: GYRO_SENS.0,
+            acc_offsets: Default::default(),
+            gyro_offsets: Default::default(),
         }
     }
 
@@ -122,6 +134,8 @@ where
             slave_addr,
             acc_sensitivity: arange.sensitivity(),
             gyro_sensitivity: grange.sensitivity(),
+            acc_offsets: Default::default(),
+            gyro_offsets: Default::default(),
         }
     }
 
@@ -356,6 +370,7 @@ where
     pub fn get_acc(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut acc = self.read_rot(ACC_REGX_H)?;
         acc /= self.acc_sensitivity;
+        acc += self.acc_offsets;
 
         Ok(acc)
     }
@@ -365,6 +380,7 @@ where
         let mut gyro = self.read_rot(GYRO_REGX_H)?;
 
         gyro *= PI_180 / self.gyro_sensitivity;
+        gyro += self.gyro_offsets;
 
         Ok(gyro)
     }
