@@ -81,10 +81,10 @@ pub struct Mpu6050<I> {
     gyro_sensitivity: f32,
     /// The offsets for the accelerometer, used for calibration. This offset is applied automatically in `fn get_acc()`, directly to the raw values.
     /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
-    acc_offsets: Vector3<f32>,
+    pub acc_offsets: Vector3<f32>,
     /// The offsets for the gyroscope, used for calibration. This offset is applied automatically in `fn get_gyro()`, directly to the raw values.
     /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
-    gyro_offsets: Vector3<f32>,
+    pub gyro_offsets: Vector3<f32>,
 }
 
 impl<I, E> Mpu6050<I>
