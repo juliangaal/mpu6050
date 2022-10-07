@@ -81,6 +81,8 @@ impl CONFIG {
     pub const EXT_SYNC_SET: BitBlock = BitBlock { bit: 5, length: 3 };
     /// Digital Low Pass Filter (DLPF) config
     pub const DLPF_CFG: BitBlock = BitBlock { bit: 2, length: 3 };
+    /// filter bandwidth
+    pub const BANDWIDTH: BitBlock = BitBlock { bit: 0, length: 3 };
 }
 
 #[allow(non_camel_case_types)]
@@ -286,6 +288,26 @@ pub enum LP_WAKE_CTRL {
     _5,
     /// 10 Hz
     _10,
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// Filter bandwidth
+pub enum BANDWIDTH {
+    /// 260 Hz (Docs imply this disables the filter)
+    _260_HZ = 0,
+    /// 184 Hz
+    _184_HZ = 1,
+    /// 94 Hz
+    _94_HZ = 2,
+    /// 44 Hz
+    _44_HZ = 3,
+    /// 21 Hz
+    _21_HZ = 4,
+    /// 10 Hz
+    _10_HZ = 5,
+    /// 5 Hz
+    _5_HZ = 6,
 }
 
 #[allow(non_camel_case_types)]

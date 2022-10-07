@@ -71,6 +71,9 @@ pub enum Mpu6050Error<E> {
 
     /// Invalid chip ID was read
     InvalidChipId(u8),
+
+    /// Invalid value received
+    InvalidValue(u8),
 }
 
 /// Handles all operations on/with Mpu6050
@@ -194,6 +197,36 @@ where
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
+    }
+
+    /// set filter bandwidth
+    pub fn set_filter_bandwidth(&mut self, bandwidth: BANDWIDTH) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bits(
+            CONFIG::ADDR,
+            CONFIG::BANDWIDTH.bit,
+            CONFIG::BANDWIDTH.length,
+            bandwidth as u8,
+        )?)
+    }
+
+    /// get filter bandwidth
+    pub fn get_filter_bandwidth(&mut self) -> Result<BANDWIDTH, Mpu6050Error<E>> {
+        let bandwidth: u8 = self.read_bits(
+            CONFIG::ADDR,
+            CONFIG::BANDWIDTH.bit,
+            CONFIG::BANDWIDTH.length,
+        )?;
+
+        match bandwidth {
+            0 => Ok(BANDWIDTH::_260_HZ),
+            1 => Ok(BANDWIDTH::_260_HZ),
+            2 => Ok(BANDWIDTH::_260_HZ),
+            3 => Ok(BANDWIDTH::_260_HZ),
+            4 => Ok(BANDWIDTH::_260_HZ),
+            5 => Ok(BANDWIDTH::_260_HZ),
+            6 => Ok(BANDWIDTH::_260_HZ),
+            _ => Err(Mpu6050Error::InvalidValue(bandwidth)),
+        }
     }
 
     /// setup motion detection
