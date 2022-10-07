@@ -271,6 +271,34 @@ where
         Ok(ACCEL_HPF::from(mode))
     }
 
+    /// Set cycle rate
+    pub fn set_cycle_rate(&mut self, range: CYCLE_RATE) -> Result<(), Mpu6050Error<E>> {
+        self.write_bits(
+            PWR_MGMT_2::ADDR,
+            PWR_MGMT_2::CYCLE_RATE.bit,
+            PWR_MGMT_2::CYCLE_RATE.length,
+            range as u8,
+        )?;
+        Ok(())
+    }
+
+    /// get cycle rate
+    pub fn get_cycle_rate(&mut self) -> Result<CYCLE_RATE, Mpu6050Error<E>> {
+        let rate = self.read_bits(
+            PWR_MGMT_2::ADDR,
+            PWR_MGMT_2::CYCLE_RATE.bit,
+            PWR_MGMT_2::CYCLE_RATE.length,
+        )?;
+
+        match rate {
+            0 => Ok(CYCLE_RATE::_1_25_HZ),
+            1 => Ok(CYCLE_RATE::_5_HZ),
+            2 => Ok(CYCLE_RATE::_20_HZ),
+            3 => Ok(CYCLE_RATE::_40_HZ),
+            _ => Err(Mpu6050Error::InvalidValue(rate)),
+        }
+    }
+
     /// Set gyro range, and update sensitivity accordingly
     pub fn set_gyro_range(&mut self, range: GyroRange) -> Result<(), Mpu6050Error<E>> {
         self.write_bits(
@@ -335,6 +363,16 @@ where
     /// get sleep status
     pub fn get_sleep_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
         Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::SLEEP)? != 0)
+    }
+
+    /// enable, disable cycle mode
+    pub fn set_cycle_mode(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::CYCLE, enable)?)
+    }
+
+    /// get cycle mode
+    pub fn get_cycle_mode(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(PWR_MGMT_1::CYCLE, PWR_MGMT_1::SLEEP)? != 0)
     }
 
     /// enable, disable temperature measurement of sensor

@@ -274,6 +274,8 @@ impl PWR_MGMT_2 {
     pub const STBY_YG: u8 = 1;
     /// disable gyro  axis z
     pub const STBY_ZG: u8 = 0;
+    /// cycle rate
+    pub const CYCLE_RATE: BitBlock = BitBlock { bit: 6, length: 2 };
 }
 
 #[allow(non_camel_case_types)]
@@ -288,6 +290,20 @@ pub enum LP_WAKE_CTRL {
     _5,
     /// 10 Hz
     _10,
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+/// Cycle rates
+pub enum CYCLE_RATE {
+    /// 1.25 Hz
+    _1_25_HZ = 0,
+    /// 5 Hz
+    _5_HZ = 1,
+    /// 20 Hz
+    _20_HZ = 2,
+    /// 40 Hz
+    _40_HZ = 3,
 }
 
 #[allow(non_camel_case_types)]
