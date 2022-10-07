@@ -7,7 +7,6 @@
 //! * Register map (rev 3.2): https://arduino.ua/docs/RM-MPU-6000A.pdf
 //! * Datasheet (rev 3.2): https://www.cdiweb.com/datasheets/invensense/ps-mpu-6000a.pdf
 
-
 /// Gyro Sensitivity
 ///
 /// Measurements are scaled like this:
@@ -49,13 +48,13 @@ pub const GYRO_REGY_H: u8 = 0x45;
 /// High Byte Register Gyro z orientation
 pub const GYRO_REGZ_H: u8 = 0x47;
 /// High Byte Register Calc roll
-pub const ACC_REGX_H : u8= 0x3b;
+pub const ACC_REGX_H: u8 = 0x3b;
 /// High Byte Register Calc pitch
-pub const ACC_REGY_H : u8= 0x3d;
+pub const ACC_REGY_H: u8 = 0x3d;
 /// High Byte Register Calc yaw
-pub const ACC_REGZ_H : u8= 0x3f;
+pub const ACC_REGZ_H: u8 = 0x3f;
 /// High Byte Register Temperature
-pub const TEMP_OUT_H : u8= 0x41;
+pub const TEMP_OUT_H: u8 = 0x41;
 /// Slave address of Mpu6050
 pub const DEFAULT_SLAVE_ADDR: u8 = 0x68;
 /// Internal register to check slave addr
@@ -64,7 +63,7 @@ pub const WHOAMI: u8 = 0x75;
 /// Describes a bit block from bit number 'bit' to 'bit'+'length'
 pub struct BitBlock {
     pub bit: u8,
-    pub length: u8
+    pub length: u8,
 }
 
 #[allow(non_camel_case_types)]
@@ -76,9 +75,9 @@ impl CONFIG {
     /// Base Address
     pub const ADDR: u8 = 0x1a;
     /// external Frame Synchronisation (FSYNC)
-    pub const EXT_SYNC_SET: BitBlock = BitBlock { bit: 5, length: 3};
+    pub const EXT_SYNC_SET: BitBlock = BitBlock { bit: 5, length: 3 };
     /// Digital Low Pass Filter (DLPF) config
-    pub const DLPF_CFG: BitBlock = BitBlock { bit: 2, length: 3};
+    pub const DLPF_CFG: BitBlock = BitBlock { bit: 2, length: 3 };
 }
 
 #[allow(non_camel_case_types)]
@@ -113,9 +112,9 @@ impl ACCEL_CONFIG {
     /// Accel z axis self test bit
     pub const ZA_ST: u8 = 5;
     /// Accel Config FS_SEL
-    pub const FS_SEL: BitBlock = BitBlock { bit: 4, length: 2};
+    pub const FS_SEL: BitBlock = BitBlock { bit: 4, length: 2 };
     /// Accel Config ACCEL_HPF
-    pub const ACCEL_HPF: BitBlock = BitBlock { bit: 2, length: 3};
+    pub const ACCEL_HPF: BitBlock = BitBlock { bit: 2, length: 3 };
 }
 
 #[allow(non_camel_case_types)]
@@ -221,11 +220,11 @@ impl MOT_DETECT_CONTROL {
     /// Base Address
     pub const ADDR: u8 = 0x69;
     /// Additional delay
-    pub const ACCEL_ON_DELAY: BitBlock = BitBlock { bit: 5, length: 2};
+    pub const ACCEL_ON_DELAY: BitBlock = BitBlock { bit: 5, length: 2 };
     ///  Free Fall count
-    pub const FF_COUNT: BitBlock = BitBlock { bit: 3, length: 2};
+    pub const FF_COUNT: BitBlock = BitBlock { bit: 3, length: 2 };
     /// Motion Detection cound
-    pub const MOT_COUNT: BitBlock = BitBlock { bit: 1, length: 2};
+    pub const MOT_COUNT: BitBlock = BitBlock { bit: 1, length: 2 };
 }
 
 #[allow(non_camel_case_types)]
@@ -257,7 +256,7 @@ impl PWR_MGMT_2 {
     /// Base Address
     pub const ADDR: u8 = 0x6c;
     /// Wake up frequency
-    pub const LP_WAKE_CTRL: BitBlock = BitBlock { bit: 7, length: 2};
+    pub const LP_WAKE_CTRL: BitBlock = BitBlock { bit: 7, length: 2 };
     /// disable accel axis x
     pub const STBY_XA: u8 = 5;
     /// disable accel axis y
@@ -302,12 +301,11 @@ pub enum ACCEL_HPF {
     _0P63 = 4,
     /// When triggered, the filter holds the present sample. The filter output will be the
     /// difference between the input sample and the held sample
-    _HOLD = 7
+    _HOLD = 7,
 }
 
 impl From<u8> for ACCEL_HPF {
-    fn from(range: u8) -> Self
-    {
+    fn from(range: u8) -> Self {
         match range {
             0 => ACCEL_HPF::_RESET,
             1 => ACCEL_HPF::_5,
@@ -353,7 +351,7 @@ impl From<u8> for CLKSEL {
             5 => CLKSEL::EXT_19P2,
             6 => CLKSEL::RESERV,
             7 => CLKSEL::STOP,
-            _ => CLKSEL::GXAXIS
+            _ => CLKSEL::GXAXIS,
         }
     }
 }
@@ -385,27 +383,25 @@ pub enum GyroRange {
 }
 
 impl From<u8> for GyroRange {
-    fn from(range: u8) -> Self
-    {
+    fn from(range: u8) -> Self {
         match range {
             0 => GyroRange::D250,
             1 => GyroRange::D500,
             2 => GyroRange::D1000,
             3 => GyroRange::D2000,
-            _ => GyroRange::D250
+            _ => GyroRange::D250,
         }
     }
 }
 
 impl From<u8> for AccelRange {
-    fn from(range: u8) -> Self
-    {
+    fn from(range: u8) -> Self {
         match range {
             0 => AccelRange::G2,
             1 => AccelRange::G4,
             2 => AccelRange::G8,
             3 => AccelRange::G16,
-            _ => AccelRange::G2
+            _ => AccelRange::G2,
         }
     }
 }
