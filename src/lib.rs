@@ -139,6 +139,16 @@ where
         Ok(())
     }
 
+    /// set sample rate divisor
+    pub fn set_sample_rate_divisor(&mut self, divisor: u8) -> Result<(), Mpu6050Error<E>> {
+        self.write_byte(SMPLRT_DIV, divisor)
+    }
+
+    /// get sample rate divisor
+    pub fn get_sample_rate_divisor(&mut self) -> Result<u8, Mpu6050Error<E>> {
+        self.read_byte(SMPLRT_DIV)
+    }
+
     /// From Register map:
     /// "An  internal  8MHz  oscillator,  gyroscope based  clock,or  external  sources  can  be
     /// selected  as the MPU-60X0 clock source.

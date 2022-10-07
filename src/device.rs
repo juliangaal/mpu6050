@@ -60,6 +60,9 @@ pub const DEFAULT_SLAVE_ADDR: u8 = 0x68;
 /// Internal register to check slave addr
 pub const WHOAMI: u8 = 0x75;
 
+// Sample Rate Divisor register
+pub const SMPLRT_DIV: u8 = 0x19;
+
 /// Describes a bit block from bit number 'bit' to 'bit'+'length'
 pub struct BitBlock {
     pub bit: u8,
