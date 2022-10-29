@@ -2,7 +2,7 @@ version: 2
 jobs:
   latest:
     docker:
-      - image: circleci/rust:latest
+      - image: cimg/rust:latest
     steps:
       - checkout
       - run: 
@@ -10,7 +10,7 @@ jobs:
           command: cargo build
   fournine:
     docker:
-      - image: circleci/rust:1.49.0
+      - image: cimg/rust:1.49.0
     steps:
       - checkout
       - run:
@@ -18,7 +18,7 @@ jobs:
           command: cargo build
   foureight:
     docker:
-      - image: circleci/rust:1.48.0
+      - image: cimg/rust:1.48.0
     steps:
       - checkout
       - run:
@@ -26,7 +26,7 @@ jobs:
           command: cargo build
   fourseven:
     docker:
-      - image: circleci/rust:1.47.0
+      - image: cimg/rust:1.47.0
     steps:
       - checkout
       - run:
@@ -34,7 +34,7 @@ jobs:
           command: cargo build
   foursix:
     docker:
-      - image: circleci/rust:1.46.0
+      - image: cimg/rust:1.46.0
     steps:
       - checkout
       - run:
@@ -42,7 +42,7 @@ jobs:
           command: cargo build
   fourfive:
     docker:
-      - image: circleci/rust:1.45.0
+      - image: cimg/rust:1.45.0
     steps:
       - checkout
       - run:
@@ -50,7 +50,7 @@ jobs:
           command: cargo build
   fourfour:
     docker:
-      - image: circleci/rust:1.44.0
+      - image: cimg/rust:1.44.0
     steps:
       - checkout
       - run:
@@ -58,7 +58,7 @@ jobs:
           command: cargo build
   fourthree:
     docker:
-      - image: circleci/rust:1.43.0
+      - image: cimg/rust:1.43.0
     steps:
       - checkout
       - run:
@@ -66,7 +66,7 @@ jobs:
           command: cargo build
   fourtwo:
     docker:
-      - image: circleci/rust:1.42.0
+      - image: cimg/rust:1.42.0
     steps:
       - checkout
       - run:
@@ -74,7 +74,7 @@ jobs:
           command: cargo build
   fourone:
     docker:
-      - image: circleci/rust:1.40.0
+      - image: cimg/rust:1.40.0
     steps:
       - checkout
       - run:
@@ -82,7 +82,7 @@ jobs:
           command: cargo build
   fourzero:
     docker:
-      - image: circleci/rust:1.40.0
+      - image: cimg/rust:1.40.0
     steps:
       - checkout
       - run:
