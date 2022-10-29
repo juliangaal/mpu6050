@@ -1,88 +1,24 @@
 version: 2
 jobs:
-  latest:
+  1dot64:
     docker:
-      - image: cimg/rust:latest
+      - image: cimg/rust:1.64.0
     steps:
       - checkout
       - run: 
           name: build and test
           command: cargo build
-  fournine:
+  1dot63:
     docker:
-      - image: cimg/rust:1.49.0
+      - image: cimg/rust:1.63.0
     steps:
       - checkout
       - run:
           name: build and test
           command: cargo build
-  foureight:
+  1dot62:
     docker:
-      - image: cimg/rust:1.48.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourseven:
-    docker:
-      - image: cimg/rust:1.47.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  foursix:
-    docker:
-      - image: cimg/rust:1.46.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourfive:
-    docker:
-      - image: cimg/rust:1.45.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourfour:
-    docker:
-      - image: cimg/rust:1.44.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourthree:
-    docker:
-      - image: cimg/rust:1.43.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourtwo:
-    docker:
-      - image: cimg/rust:1.42.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourone:
-    docker:
-      - image: cimg/rust:1.40.0
-    steps:
-      - checkout
-      - run:
-          name: build and test
-          command: cargo build
-  fourzero:
-    docker:
-      - image: cimg/rust:1.40.0
+      - image: cimg/rust:1.62.0
     steps:
       - checkout
       - run:
@@ -93,15 +29,7 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - latest
-      - fournine
-      - foureight
-      - fourseven
-      - foursix
-      - fourfive
-      - fourfour
-      - fourthree
-      - fourtwo
-      - fourone
-      - fourzero
+      - 1dot64
+      - 1dot63
+      - 1dot62
 
