@@ -6,6 +6,7 @@
 //! #### Sources:
 //! * Register map (rev 3.2): https://arduino.ua/docs/RM-MPU-6000A.pdf
 //! * Datasheet (rev 3.2): https://www.cdiweb.com/datasheets/invensense/ps-mpu-6000a.pdf
+//! * MPU-6886 datasheet (rev 1.1): https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/docs/datasheet/core/MPU-6886-000193%2Bv1.1_GHIC_en.pdf
 
 
 /// Gyro Sensitivity
@@ -60,6 +61,8 @@ pub const TEMP_OUT_H : u8= 0x41;
 pub const DEFAULT_SLAVE_ADDR: u8 = 0x68;
 /// Internal register to check slave addr
 pub const WHOAMI: u8 = 0x75;
+// Value of WHOAMI register in MPU6886
+pub const WHOAMI_VALUE_MPU6886: u8 = 0x19;
 
 /// Describes a bit block from bit number 'bit' to 'bit'+'length'
 pub struct BitBlock {

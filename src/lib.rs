@@ -74,14 +74,14 @@ pub enum Mpu6050Error<E> {
 }
 
 /// Handles all operations on/with Mpu6050
-pub struct Mpu6050<I> {
+pub struct Mpu6050<I, const WHO_AM_I_VALUE: u8 = DEFAULT_SLAVE_ADDR> {
     i2c: I,
     slave_addr: u8,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
 }
 
-impl<I, E> Mpu6050<I>
+impl<I, const WHO_AM_I_VALUE: u8, E> Mpu6050<I, WHO_AM_I_VALUE>
 where
     I: Write<Error = E> + WriteRead<Error = E>, 
 {
@@ -166,7 +166,7 @@ where
     /// Verifies device to address 0x68 with WHOAMI.addr() Register
     fn verify(&mut self) -> Result<(), Mpu6050Error<E>> {
         let address = self.read_byte(WHOAMI)?;
-        if address != DEFAULT_SLAVE_ADDR {
+        if address != WHO_AM_I_VALUE {
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
@@ -435,3 +435,4 @@ where
     }
 }
 
+pub type Mpu6886<I> = Mpu6050<I, WHOAMI_VALUE_MPU6886>;
