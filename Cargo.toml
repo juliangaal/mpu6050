@@ -20,4 +20,4 @@ version = "0.31.2"
 
 [dev-dependencies]
 i2cdev = "0.5.1"
-linux-embedded-hal = "0.3.0"
+linux-embedded-hal = "0.3.2"
