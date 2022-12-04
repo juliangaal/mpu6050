@@ -1,6 +1,5 @@
 use mpu6050::{*, device::MOT_DETECT_STATUS};
-use linux_embedded_hal::{I2cdev, Delay};
-use i2cdev::linux::LinuxI2CError;
+use linux_embedded_hal::{I2cdev, i2cdev::linux::LinuxI2CError, Delay};
 use embedded_hal::blocking::delay::DelayMs;
 
 fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {

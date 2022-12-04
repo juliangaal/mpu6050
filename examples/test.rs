@@ -1,7 +1,6 @@
 use mpu6050::{*, device::*};
 
-use linux_embedded_hal::{I2cdev, Delay};
-use i2cdev::linux::LinuxI2CError;
+use linux_embedded_hal::{I2cdev, i2cdev::linux::LinuxI2CError, Delay};
 use mpu6050::device::{ACCEL_HPF, CLKSEL};
 
 fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
