@@ -73,18 +73,30 @@ pub enum Mpu6050Error<E> {
     InvalidChipId(u8),
 }
 
-/// Handles all operations on/with Mpu6050
-pub struct Mpu6050<I> {
-    i2c: I,
-    slave_addr: u8,
-    acc_sensitivity: f32,
-    gyro_sensitivity: f32,
+/// Calibration offsets
+#[derive(Debug)]
+pub struct CalibrationData {
     /// The offsets for the accelerometer, used for calibration. This offset is applied automatically in `fn get_acc()`, directly to the raw values.
     /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
     pub acc_offsets: Vector3<f32>,
     /// The offsets for the gyroscope, used for calibration. This offset is applied automatically in `fn get_gyro()`, directly to the raw values.
     /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
     pub gyro_offsets: Vector3<f32>,
+}
+
+impl Default for CalibrationData {
+    fn default() -> Self {
+        CalibrationData { acc_offsets: Default::default(), gyro_offsets: Default::default() }
+    }
+}
+
+/// Handles all operations on/with Mpu6050
+pub struct Mpu6050<I> {
+    i2c: I,
+    slave_addr: u8,
+    acc_sensitivity: f32,
+    gyro_sensitivity: f32,
+    calibration: CalibrationData
 }
 
 impl<I, E> Mpu6050<I>
@@ -98,8 +110,7 @@ where
             slave_addr: DEFAULT_SLAVE_ADDR,
             acc_sensitivity: ACCEL_SENS.0,
             gyro_sensitivity: GYRO_SENS.0,
-            acc_offsets: Default::default(),
-            gyro_offsets: Default::default(),
+            calibration: Default::default()
         }
     }
 
@@ -110,8 +121,7 @@ where
             slave_addr: DEFAULT_SLAVE_ADDR,
             acc_sensitivity: arange.sensitivity(),
             gyro_sensitivity: grange.sensitivity(),
-            acc_offsets: Default::default(),
-            gyro_offsets: Default::default(),
+            calibration: Default::default()
         }
     }
 
@@ -122,8 +132,7 @@ where
             slave_addr,
             acc_sensitivity: ACCEL_SENS.0,
             gyro_sensitivity: GYRO_SENS.0,
-            acc_offsets: Default::default(),
-            gyro_offsets: Default::default(),
+            calibration: Default::default()
         }
     }
 
@@ -134,8 +143,7 @@ where
             slave_addr,
             acc_sensitivity: arange.sensitivity(),
             gyro_sensitivity: grange.sensitivity(),
-            acc_offsets: Default::default(),
-            gyro_offsets: Default::default(),
+            calibration: Default::default()
         }
     }
 
@@ -184,6 +192,16 @@ where
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
+    }
+
+    /// Load calibration data (CalibrationData) from external source
+    pub fn load_calibration_data(&mut self, calibration: CalibrationData) -> Result<(), Mpu6050Error<E>> {
+        self.calibration = calibration;
+        Ok(())
+    }
+
+    pub fn calibrate(&mut self) -> Result<CalibrationData, Mpu6050Error<E>> {
+        Ok(CalibrationData::default())
     }
 
     /// setup motion detection
@@ -370,7 +388,7 @@ where
     pub fn get_acc(&mut self) -> Result<Vector3<f32>, Mpu6050Error<E>> {
         let mut acc = self.read_rot(ACC_REGX_H)?;
         acc /= self.acc_sensitivity;
-        acc += self.acc_offsets;
+        acc += self.calibration.acc_offsets;
 
         Ok(acc)
     }
@@ -380,7 +398,7 @@ where
         let mut gyro = self.read_rot(GYRO_REGX_H)?;
 
         gyro *= PI_180 / self.gyro_sensitivity;
-        gyro += self.gyro_offsets;
+        gyro += self.calibration.gyro_offsets;
 
         Ok(gyro)
     }
