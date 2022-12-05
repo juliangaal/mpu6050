@@ -31,7 +31,7 @@
 //!
 //!         // get sensor temp
 //!         let temp = mpu.get_temp()?;
-//!         printlnasd!("temp: {:?}c", temp);
+//!         println!("temp: {:?}c", temp);
 //!
 //!         // get gyro data, scaled with sensitivity
 //!         let gyro = mpu.get_gyro()?;

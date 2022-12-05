@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run: 
           name: build and test
-          command: cargo build
+          command: cargo build && cargo test && cargo build --examples
   1dot63:
     docker:
       - image: cimg/rust:1.63.0
@@ -15,7 +15,7 @@ jobs:
       - checkout
       - run:
           name: build and test
-          command: cargo build
+          command: cargo build && cargo test && cargo build --examples
   1dot62:
     docker:
       - image: cimg/rust:1.62.0
@@ -23,7 +23,7 @@ jobs:
       - checkout
       - run:
           name: build and test
-          command: cargo build
+          command: cargo build && cargo test && cargo build --examples
 
 workflows:
   version: 2
