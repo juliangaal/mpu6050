@@ -74,7 +74,7 @@ pub enum Mpu6050Error<E> {
 }
 
 /// Calibration offsets
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct CalibrationData {
     /// The offsets for the accelerometer, used for calibration. This offset is applied automatically in `fn get_acc()`, directly to the raw values.
     /// This offset is different for each sensitivity mode, so you should generate it for each mode, and change it when switching modes.
