@@ -2,7 +2,7 @@
 name = "mpu6050"
 version = "0.1.6"
 authors = ["Julian Gaal <gjulian@uos.de>"]
-edition = "2018"
+edition = "2021"
 
 description = "Platform agnostic driver for MPU6050 6-axis IMU"
 repository = "https://github.com/juliangaal/mpu6050"

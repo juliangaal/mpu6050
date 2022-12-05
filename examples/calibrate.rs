@@ -22,8 +22,6 @@ const TEST_ITERATIONS: i32 = 1000;
 
 fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
 	let i2c = I2cdev::new("/dev/i2c-1").map_err(Mpu6050Error::I2c)?;
-	let mut calib = mpu6050::CalibrationData::default();
-	let mut calib_test = mpu6050::CalibrationData::default();
 
 	let mut delay = Delay;
 	let mut mpu = Mpu6050::new_with_sens(i2c,
