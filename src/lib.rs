@@ -5,7 +5,7 @@
 //! ### Misc
 //! * [Register sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6000-Register-Map1.pdf),
 //! * [Data sheet](https://www.invensense.com/wp-content/uploads/2015/02/MPU-6500-Datasheet2.pdf)
-//! 
+//!
 //! To use this driver you must provide a concrete `embedded_hal` implementation.
 //! This example uses `linux_embedded_hal`.
 //!
@@ -50,12 +50,12 @@ mod bits;
 pub mod device;
 
 use crate::device::*;
-use libm::{powf, atan2f, sqrtf};
-use nalgebra::{Vector3, Vector2};
 use embedded_hal::{
     blocking::delay::DelayMs,
     blocking::i2c::{Write, WriteRead},
 };
+use libm::{atan2f, powf, sqrtf};
+use nalgebra::{Vector2, Vector3};
 
 /// PI, f32
 pub const PI: f32 = core::f32::consts::PI;
@@ -71,6 +71,9 @@ pub enum Mpu6050Error<E> {
 
     /// Invalid chip ID was read
     InvalidChipId(u8),
+
+    /// Invalid value received
+    InvalidValue(u8),
 }
 
 /// Handles all operations on/with Mpu6050
@@ -83,7 +86,7 @@ pub struct Mpu6050<I> {
 
 impl<I, E> Mpu6050<I>
 where
-    I: Write<Error = E> + WriteRead<Error = E>, 
+    I: Write<Error = E> + WriteRead<Error = E>,
 {
     /// Side effect free constructor with default sensitivies, no calibration
     pub fn new(i2c: I) -> Self {
@@ -116,7 +119,12 @@ where
     }
 
     /// Combination of `new_with_sens` and `new_with_addr`
-    pub fn new_with_addr_and_sens(i2c: I, slave_addr: u8, arange: AccelRange, grange: GyroRange) -> Self {
+    pub fn new_with_addr_and_sens(
+        i2c: I,
+        slave_addr: u8,
+        arange: AccelRange,
+        grange: GyroRange,
+    ) -> Self {
         Mpu6050 {
             i2c,
             slave_addr,
@@ -128,10 +136,22 @@ where
     /// Wakes MPU6050 with all sensors enabled (default)
     fn wake<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         // MPU6050 has sleep enabled by default -> set bit 0 to wake
+        self.set_sleep_enabled(false)?;
         // Set clock source to be PLL with x-axis gyroscope reference, bits 2:0 = 001 (See Register Map )
-        self.write_byte(PWR_MGMT_1::ADDR, 0x01)?;
+        self.set_clock_source(CLKSEL::GXAXIS)?;
+
         delay.delay_ms(100u8);
         Ok(())
+    }
+
+    /// set sample rate divisor
+    pub fn set_sample_rate_divisor(&mut self, divisor: u8) -> Result<(), Mpu6050Error<E>> {
+        self.write_byte(SMPLRT_DIV, divisor)
+    }
+
+    /// get sample rate divisor
+    pub fn get_sample_rate_divisor(&mut self) -> Result<u8, Mpu6050Error<E>> {
+        self.read_byte(SMPLRT_DIV)
     }
 
     /// From Register map:
@@ -144,12 +164,21 @@ where
     /// (or  an  external  clocksource) as the clock reference for improved stability.
     /// The clock source can be selected according to the following table...."
     pub fn set_clock_source(&mut self, source: CLKSEL) -> Result<(), Mpu6050Error<E>> {
-        Ok(self.write_bits(PWR_MGMT_1::ADDR, PWR_MGMT_1::CLKSEL.bit, PWR_MGMT_1::CLKSEL.length, source as u8)?)
+        Ok(self.write_bits(
+            PWR_MGMT_1::ADDR,
+            PWR_MGMT_1::CLKSEL.bit,
+            PWR_MGMT_1::CLKSEL.length,
+            source as u8,
+        )?)
     }
 
     /// get current clock source
     pub fn get_clock_source(&mut self) -> Result<CLKSEL, Mpu6050Error<E>> {
-        let source = self.read_bits(PWR_MGMT_1::ADDR, PWR_MGMT_1::CLKSEL.bit, PWR_MGMT_1::CLKSEL.length)?;
+        let source = self.read_bits(
+            PWR_MGMT_1::ADDR,
+            PWR_MGMT_1::CLKSEL.bit,
+            PWR_MGMT_1::CLKSEL.length,
+        )?;
         Ok(CLKSEL::from(source))
     }
 
@@ -170,6 +199,36 @@ where
             return Err(Mpu6050Error::InvalidChipId(address));
         }
         Ok(())
+    }
+
+    /// set filter bandwidth
+    pub fn set_filter_bandwidth(&mut self, bandwidth: BANDWIDTH) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bits(
+            CONFIG::ADDR,
+            CONFIG::BANDWIDTH.bit,
+            CONFIG::BANDWIDTH.length,
+            bandwidth as u8,
+        )?)
+    }
+
+    /// get filter bandwidth
+    pub fn get_filter_bandwidth(&mut self) -> Result<BANDWIDTH, Mpu6050Error<E>> {
+        let bandwidth: u8 = self.read_bits(
+            CONFIG::ADDR,
+            CONFIG::BANDWIDTH.bit,
+            CONFIG::BANDWIDTH.length,
+        )?;
+
+        match bandwidth {
+            0 => Ok(BANDWIDTH::_260_HZ),
+            1 => Ok(BANDWIDTH::_260_HZ),
+            2 => Ok(BANDWIDTH::_260_HZ),
+            3 => Ok(BANDWIDTH::_260_HZ),
+            4 => Ok(BANDWIDTH::_260_HZ),
+            5 => Ok(BANDWIDTH::_260_HZ),
+            6 => Ok(BANDWIDTH::_260_HZ),
+            _ => Err(Mpu6050Error::InvalidValue(bandwidth)),
+        }
     }
 
     /// setup motion detection
@@ -195,29 +254,61 @@ where
 
     /// set accel high pass filter mode
     pub fn set_accel_hpf(&mut self, mode: ACCEL_HPF) -> Result<(), Mpu6050Error<E>> {
-        Ok(
-            self.write_bits(ACCEL_CONFIG::ADDR,
-                            ACCEL_CONFIG::ACCEL_HPF.bit,
-                            ACCEL_CONFIG::ACCEL_HPF.length,
-                            mode as u8)?
-        )
+        Ok(self.write_bits(
+            ACCEL_CONFIG::ADDR,
+            ACCEL_CONFIG::ACCEL_HPF.bit,
+            ACCEL_CONFIG::ACCEL_HPF.length,
+            mode as u8,
+        )?)
     }
 
     /// get accel high pass filter mode
     pub fn get_accel_hpf(&mut self) -> Result<ACCEL_HPF, Mpu6050Error<E>> {
-        let mode: u8 = self.read_bits(ACCEL_CONFIG::ADDR,
-                                      ACCEL_CONFIG::ACCEL_HPF.bit,
-                                      ACCEL_CONFIG::ACCEL_HPF.length)?;
+        let mode: u8 = self.read_bits(
+            ACCEL_CONFIG::ADDR,
+            ACCEL_CONFIG::ACCEL_HPF.bit,
+            ACCEL_CONFIG::ACCEL_HPF.length,
+        )?;
 
         Ok(ACCEL_HPF::from(mode))
     }
 
+    /// Set cycle rate
+    pub fn set_cycle_rate(&mut self, range: CYCLE_RATE) -> Result<(), Mpu6050Error<E>> {
+        self.write_bits(
+            PWR_MGMT_2::ADDR,
+            PWR_MGMT_2::CYCLE_RATE.bit,
+            PWR_MGMT_2::CYCLE_RATE.length,
+            range as u8,
+        )?;
+        Ok(())
+    }
+
+    /// get cycle rate
+    pub fn get_cycle_rate(&mut self) -> Result<CYCLE_RATE, Mpu6050Error<E>> {
+        let rate = self.read_bits(
+            PWR_MGMT_2::ADDR,
+            PWR_MGMT_2::CYCLE_RATE.bit,
+            PWR_MGMT_2::CYCLE_RATE.length,
+        )?;
+
+        match rate {
+            0 => Ok(CYCLE_RATE::_1_25_HZ),
+            1 => Ok(CYCLE_RATE::_5_HZ),
+            2 => Ok(CYCLE_RATE::_20_HZ),
+            3 => Ok(CYCLE_RATE::_40_HZ),
+            _ => Err(Mpu6050Error::InvalidValue(rate)),
+        }
+    }
+
     /// Set gyro range, and update sensitivity accordingly
     pub fn set_gyro_range(&mut self, range: GyroRange) -> Result<(), Mpu6050Error<E>> {
-        self.write_bits(GYRO_CONFIG::ADDR,
-                        GYRO_CONFIG::FS_SEL.bit,
-                        GYRO_CONFIG::FS_SEL.length,
-                        range as u8)?;
+        self.write_bits(
+            GYRO_CONFIG::ADDR,
+            GYRO_CONFIG::FS_SEL.bit,
+            GYRO_CONFIG::FS_SEL.length,
+            range as u8,
+        )?;
 
         self.gyro_sensitivity = range.sensitivity();
         Ok(())
@@ -225,19 +316,23 @@ where
 
     /// get current gyro range
     pub fn get_gyro_range(&mut self) -> Result<GyroRange, Mpu6050Error<E>> {
-        let byte = self.read_bits(GYRO_CONFIG::ADDR,
-                                  GYRO_CONFIG::FS_SEL.bit,
-                                  GYRO_CONFIG::FS_SEL.length)?;
+        let byte = self.read_bits(
+            GYRO_CONFIG::ADDR,
+            GYRO_CONFIG::FS_SEL.bit,
+            GYRO_CONFIG::FS_SEL.length,
+        )?;
 
         Ok(GyroRange::from(byte))
     }
 
     /// set accel range, and update sensitivy accordingly
     pub fn set_accel_range(&mut self, range: AccelRange) -> Result<(), Mpu6050Error<E>> {
-        self.write_bits(ACCEL_CONFIG::ADDR,
-                        ACCEL_CONFIG::FS_SEL.bit,
-                        ACCEL_CONFIG::FS_SEL.length,
-                        range as u8)?;
+        self.write_bits(
+            ACCEL_CONFIG::ADDR,
+            ACCEL_CONFIG::FS_SEL.bit,
+            ACCEL_CONFIG::FS_SEL.length,
+            range as u8,
+        )?;
 
         self.acc_sensitivity = range.sensitivity();
         Ok(())
@@ -245,9 +340,11 @@ where
 
     /// get current accel_range
     pub fn get_accel_range(&mut self) -> Result<AccelRange, Mpu6050Error<E>> {
-        let byte = self.read_bits(ACCEL_CONFIG::ADDR,
-                                  ACCEL_CONFIG::FS_SEL.bit,
-                                  ACCEL_CONFIG::FS_SEL.length)?;
+        let byte = self.read_bits(
+            ACCEL_CONFIG::ADDR,
+            ACCEL_CONFIG::FS_SEL.bit,
+            ACCEL_CONFIG::FS_SEL.length,
+        )?;
 
         Ok(AccelRange::from(byte))
     }
@@ -268,6 +365,16 @@ where
     /// get sleep status
     pub fn get_sleep_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
         Ok(self.read_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::SLEEP)? != 0)
+    }
+
+    /// enable, disable cycle mode
+    pub fn set_cycle_mode(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::CYCLE, enable)?)
+    }
+
+    /// get cycle mode
+    pub fn get_cycle_mode(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(PWR_MGMT_1::CYCLE, PWR_MGMT_1::SLEEP)? != 0)
     }
 
     /// enable, disable temperature measurement of sensor
@@ -322,7 +429,7 @@ where
 
         Ok(Vector2::<f32>::new(
             atan2f(acc.y, sqrtf(powf(acc.x, 2.) + powf(acc.z, 2.))),
-            atan2f(-acc.x, sqrtf(powf(acc.y, 2.) + powf(acc.z, 2.)))
+            atan2f(-acc.x, sqrtf(powf(acc.y, 2.) + powf(acc.z, 2.))),
         ))
     }
 
@@ -348,7 +455,7 @@ where
         Ok(Vector3::<f32>::new(
             self.read_word_2c(&buf[0..2]) as f32,
             self.read_word_2c(&buf[2..4]) as f32,
-            self.read_word_2c(&buf[4..6]) as f32
+            self.read_word_2c(&buf[4..6]) as f32,
         ))
     }
 
@@ -381,7 +488,8 @@ where
 
     /// Writes byte to register
     pub fn write_byte(&mut self, reg: u8, byte: u8) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write(self.slave_addr, &[reg, byte])
+        self.i2c
+            .write(self.slave_addr, &[reg, byte])
             .map_err(Mpu6050Error::I2c)?;
         // delay disabled for dev build
         // TODO: check effects with physical unit
@@ -398,7 +506,13 @@ where
     }
 
     /// Write bits data at reg from start_bit to start_bit+length
-    pub fn write_bits(&mut self, reg: u8, start_bit: u8, length: u8, data: u8) -> Result<(), Mpu6050Error<E>> {
+    pub fn write_bits(
+        &mut self,
+        reg: u8,
+        start_bit: u8,
+        length: u8,
+        data: u8,
+    ) -> Result<(), Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
         self.read_bytes(reg, &mut byte)?;
         bits::set_bits(&mut byte[0], start_bit, length, data);
@@ -422,16 +536,17 @@ where
     /// Reads byte from register
     pub fn read_byte(&mut self, reg: u8) -> Result<u8, Mpu6050Error<E>> {
         let mut byte: [u8; 1] = [0; 1];
-        self.i2c.write_read(self.slave_addr, &[reg], &mut byte)
+        self.i2c
+            .write_read(self.slave_addr, &[reg], &mut byte)
             .map_err(Mpu6050Error::I2c)?;
         Ok(byte[0])
     }
 
     /// Reads series of bytes into buf from specified reg
     pub fn read_bytes(&mut self, reg: u8, buf: &mut [u8]) -> Result<(), Mpu6050Error<E>> {
-        self.i2c.write_read(self.slave_addr, &[reg], buf)
+        self.i2c
+            .write_read(self.slave_addr, &[reg], buf)
             .map_err(Mpu6050Error::I2c)?;
         Ok(())
     }
 }
-
