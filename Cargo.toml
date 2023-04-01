@@ -11,7 +11,8 @@ keywords = ["mpu6050", "imu", "embedded"]
 license = "MIT"
 
 [dependencies]
-embedded-hal = "0.2.4"
+#embedded-hal = "1.0.0-alpha.9"
+embedded-hal = {git = "https://github.com/rust-embedded/embedded-hal"}
 libm = "0.2.1"
 
 [dependencies.nalgebra]
