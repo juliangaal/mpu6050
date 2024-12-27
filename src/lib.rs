@@ -261,6 +261,26 @@ where
         Ok(())
     }
 
+    /// enable, disable i2c master interrupt
+    pub fn set_master_interrupt_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(INT_ENABLE::ADDR, INT_ENABLE::I2C_MST_INT_EN, enable)?)
+    }
+
+    /// get i2c master interrupt status
+    pub fn get_master_interrupt_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(INT_ENABLE::ADDR, INT_ENABLE::I2C_MST_INT_EN)? != 0)
+    }
+
+    /// enable, disable bypass of sensor
+    pub fn set_bypass_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(INT_PIN_CFG::ADDR, INT_PIN_CFG::I2C_BYPASS_EN, enable)?)
+    }
+
+    /// get bypass status
+    pub fn get_bypass_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(INT_PIN_CFG::ADDR, INT_PIN_CFG::I2C_BYPASS_EN)? != 0)
+    }
+
     /// enable, disable sleep of sensor
     pub fn set_sleep_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
         Ok(self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::SLEEP, enable)?)
