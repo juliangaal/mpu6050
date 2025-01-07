@@ -53,9 +53,10 @@ use crate::device::*;
 use libm::{powf, atan2f, sqrtf};
 use nalgebra::{Vector3, Vector2};
 use embedded_hal::{
-    blocking::delay::DelayMs,
-    blocking::i2c::{Write, WriteRead},
+    delay::DelayNs,
+    i2c::I2c,
 };
+
 
 /// PI, f32
 pub const PI: f32 = core::f32::consts::PI;
@@ -74,19 +75,19 @@ pub enum Mpu6050Error<E> {
 }
 
 /// Handles all operations on/with Mpu6050
-pub struct Mpu6050<I> {
-    i2c: I,
+pub struct Mpu6050<I2C> {
+    i2c: I2C,
     slave_addr: u8,
     acc_sensitivity: f32,
     gyro_sensitivity: f32,
 }
 
-impl<I, E> Mpu6050<I>
+impl<I2C, E> Mpu6050<I2C>
 where
-    I: Write<Error = E> + WriteRead<Error = E>, 
+    I2C: I2c<Error=E>, 
 {
     /// Side effect free constructor with default sensitivies, no calibration
-    pub fn new(i2c: I) -> Self {
+    pub fn new(i2c: I2C) -> Self {
         Mpu6050 {
             i2c,
             slave_addr: DEFAULT_SLAVE_ADDR,
@@ -96,7 +97,7 @@ where
     }
 
     /// custom sensitivity
-    pub fn new_with_sens(i2c: I, arange: AccelRange, grange: GyroRange) -> Self {
+    pub fn new_with_sens(i2c: I2C, arange: AccelRange, grange: GyroRange) -> Self {
         Mpu6050 {
             i2c,
             slave_addr: DEFAULT_SLAVE_ADDR,
@@ -106,7 +107,7 @@ where
     }
 
     /// Same as `new`, but the chip address can be specified (e.g. 0x69, if the A0 pin is pulled up)
-    pub fn new_with_addr(i2c: I, slave_addr: u8) -> Self {
+    pub fn new_with_addr(i2c: I2C, slave_addr: u8) -> Self {
         Mpu6050 {
             i2c,
             slave_addr,
@@ -116,7 +117,7 @@ where
     }
 
     /// Combination of `new_with_sens` and `new_with_addr`
-    pub fn new_with_addr_and_sens(i2c: I, slave_addr: u8, arange: AccelRange, grange: GyroRange) -> Self {
+    pub fn new_with_addr_and_sens(i2c: I2C, slave_addr: u8, arange: AccelRange, grange: GyroRange) -> Self {
         Mpu6050 {
             i2c,
             slave_addr,
@@ -126,11 +127,11 @@ where
     }
 
     /// Wakes MPU6050 with all sensors enabled (default)
-    fn wake<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+    fn wake<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         // MPU6050 has sleep enabled by default -> set bit 0 to wake
         // Set clock source to be PLL with x-axis gyroscope reference, bits 2:0 = 001 (See Register Map )
         self.write_byte(PWR_MGMT_1::ADDR, 0x01)?;
-        delay.delay_ms(100u8);
+        delay.delay_ms(100u32);
         Ok(())
     }
 
@@ -154,7 +155,7 @@ where
     }
 
     /// Init wakes MPU6050 and verifies register addr, e.g. in i2c
-    pub fn init<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+    pub fn init<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         self.wake(delay)?;
         self.verify()?;
         self.set_accel_range(AccelRange::G2)?;
@@ -253,11 +254,31 @@ where
     }
 
     /// reset device
-    pub fn reset_device<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
+    pub fn reset_device<D: DelayNs>(&mut self, delay: &mut D) -> Result<(), Mpu6050Error<E>> {
         self.write_bit(PWR_MGMT_1::ADDR, PWR_MGMT_1::DEVICE_RESET, true)?;
-        delay.delay_ms(100u8);
+        delay.delay_ms(100u32);
         // Note: Reset sets sleep to true! Section register map: resets PWR_MGMT to 0x40
         Ok(())
+    }
+
+    /// enable, disable i2c master interrupt
+    pub fn set_master_interrupt_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(INT_ENABLE::ADDR, INT_ENABLE::I2C_MST_INT_EN, enable)?)
+    }
+
+    /// get i2c master interrupt status
+    pub fn get_master_interrupt_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(INT_ENABLE::ADDR, INT_ENABLE::I2C_MST_INT_EN)? != 0)
+    }
+
+    /// enable, disable bypass of sensor
+    pub fn set_bypass_enabled(&mut self, enable: bool) -> Result<(), Mpu6050Error<E>> {
+        Ok(self.write_bit(INT_PIN_CFG::ADDR, INT_PIN_CFG::I2C_BYPASS_EN, enable)?)
+    }
+
+    /// get bypass status
+    pub fn get_bypass_enabled(&mut self) -> Result<bool, Mpu6050Error<E>> {
+        Ok(self.read_bit(INT_PIN_CFG::ADDR, INT_PIN_CFG::I2C_BYPASS_EN)? != 0)
     }
 
     /// enable, disable sleep of sensor
