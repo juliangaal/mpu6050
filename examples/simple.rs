@@ -9,23 +9,23 @@ fn main() -> Result<(), Mpu6050Error<LinuxI2CError>> {
     let mut delay = Delay;
     let mut mpu = Mpu6050::new(i2c);
     
-    mpu.init(&mut delay)?;
+    mpu.init(&mut delay).unwrap();
 
     loop {
         // get roll and pitch estimate
-        let acc = mpu.get_acc_angles()?;
+        let acc = mpu.get_acc_angles().unwrap();
         println!("r/p: {:?}", acc);
 
         // get sensor temp
-        let temp = mpu.get_temp()?;
+        let temp = mpu.get_temp().unwrap();
         println!("temp: {:?}c", temp);
 
         // get gyro data, scaled with sensitivity 
-        let gyro = mpu.get_gyro()?;
+        let gyro = mpu.get_gyro().unwrap();
         println!("gyro: {:?}", gyro);
 
         // get accelerometer data, scaled with sensitivity
-        let acc = mpu.get_acc()?;
+        let acc = mpu.get_acc().unwrap();
         println!("acc: {:?}", acc);
     }
 }
